@@ -8,27 +8,22 @@ An empirical evaluation on a range of applications suggests that by using this a
 
 ### Requirements
 
-[Dynamatic HLS tool](https://dynamatic.epfl.ch)
-
 [Vivado HLS](https://www.xilinx.com/products/design-tools/vivado/integration/esl-design.html)
 
-### Building Dynamatic
-
-If you do not have Dynamatic, you can simply install it by the following command:
-```
-git clone https://github.com/lana555/dynamatic.git
-bash dhls_install.sh
-```
-If you already have Dynamatic installed, you can simply change the directory in `env.tcl`:
-```
-DHLS=$DSS/dynamatic
-```
+[Dynamatic HLS tool](https://dynamatic.epfl.ch)
 
 ### Linking Vivado HLS
 
-In the `env.tcl` file, you need to specify where your Vivado HLS, like:
+In the `env.tcl` file, you need to specify where your Vivado HLS is, like:
 ```
 VHLS=/tools/Xilinx/Vivado/2019.2/bin/vivado_hls
+```
+
+### Building Dynamatic
+
+The tool automatically installs Dynamatic by default. If you already have Dynamatic installed, you can simply comment the first two lines in `install.sh` and also change the directory in `env.tcl`, like:
+```
+DHLS=tools/dynamatic
 ```
 
 ### Build DASS:

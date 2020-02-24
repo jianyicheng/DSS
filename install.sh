@@ -4,8 +4,8 @@
 
 # This is the script in case you do not have dynamatic
 # If you have installed dynamatic, please change the directory in the env.tcl file
-# git clone https://github.com/lana555/dynamatic.git
-# bash dhls_install.sh
+git clone https://github.com/JianyiCheng/dynamatic.git
+bash dhls_install.sh
 
 
 if ! grep -q "DSS" env.tcl; then
