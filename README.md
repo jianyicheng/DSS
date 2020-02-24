@@ -38,7 +38,7 @@ bash install.sh
 ## How to use
 
 To use DASS, you can add pragma in your functions to specify which scheduling technique is applied, like:
-```
+```C
 foo(...){ // to be dynamically scheduled - Dynamatic
 #pragma DS 
   g(...)
