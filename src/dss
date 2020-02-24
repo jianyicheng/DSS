@@ -1,0 +1,27 @@
+#!/bin/sh
+. ../env.tcl
+NAME=${1?Error: no benchmark name given}
+# run example
+python $DSS/src/frontEndAnalysis.py $NAME | tee -a $NAME/_build/dss_front.log
+if grep -Fxq "Error" $NAME/_build/dss_front.log
+then
+    echo "Error found in DaSS frontend, see $NAME/_build/dss_front.log file"
+    exit 3
+fi
+bash $NAME/_build/dynamic.sh | tee -a $NAME/_build/dhls.log
+cd $NAME/_build
+#$VHLS static.tcl | tee -a vhls.log
+if grep -Fxq "Error" $NAME/_build/vhls.log
+then
+  echo "Error found in Vivado HLS, see $NAME/_build/vhls.log file"
+  exit 3
+fi
+cd ../..
+bash $NAME/_build/static.sh  | tee -a $NAME/_build/dss_back.log
+if grep -Fxq "Error" $NAME/_build/dss_back.log
+then
+  echo "Error found in Vivado HLS, see $NAME/_build/dss_back.log file"
+  exit 3
+fi
+python $DSS/src/backEndAnalysis.py $NAME
+echo "DaSS finished successfully! The VHDL files are in the $NAME/vhdl/ folder."
