@@ -1,7 +1,7 @@
 # ====================================================
 # Dynamic & Static Scheduling v1.0
 #
-# This is the SS synthesis of DaSS:
+# This is the front-end of DASS:
 # * construct the list of the source code
 # * output SS hardware
 #
