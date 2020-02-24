@@ -1,7 +1,7 @@
 # ====================================================
 # Dynamic & Static Scheduling v1.0
 #
-# This is the backend of DaSS:
+# This is the backend of DASS:
 # * extract the scheduling constraints
 # * output DS hardware
 #
