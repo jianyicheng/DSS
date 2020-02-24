@@ -1,7 +1,9 @@
 # DASS HLS Compiler
 
-DASS is a platform tool for generating high-level synthesis (HLS) hardware. A central task in HLS is scheduling: the allocation of operations to clock cycles. The classic approach to scheduling is static, in which each operation is mapped to a clock cycle at compile-time, but recent years have seen the emergence of dynamic scheduling, in which an operation’s clock cycle is only determined at run-time. Both approaches have their merits: static scheduling can lead to simpler circuitry and more resource sharing, while dy- namic scheduling can lead to faster hardware when the computation has non-trivial control flow.
-In this work, we seek a scheduling approach that combines the best of both worlds. Our idea is to identify the parts of the input program where dynamic scheduling does not bring any perfor- mance advantage and to use static scheduling on those parts. These statically-scheduled parts are then treated as black boxes when creating a dataflow circuit for the remainder of the program which can benefit from the flexibility of dynamic scheduling.
+DASS is a high-level synthesis (HLS) platform tool for generating high-performance and area-efficient hardware. A central task in HLS is scheduling: the allocation of operations to clock cycles. The classic approach to scheduling is static, in which each operation is mapped to a clock cycle at compile-time, but recent years have seen the emergence of dynamic scheduling, in which an operation’s clock cycle is only determined at run-time. Both approaches have their merits: static scheduling can lead to simpler circuitry and more resource sharing, while dy- namic scheduling can lead to faster hardware when the computation has non-trivial control flow.
+
+DASS seeks a scheduling approach that combines the best of both worlds. The users can identify the parts of the input program where dynamic scheduling does not bring any performance advantage and to use static scheduling on those parts. These statically-scheduled parts are then treated as black boxes when creating a dataflow circuit for the remainder of the program which can benefit from the flexibility of dynamic scheduling.
+
 An empirical evaluation on a range of applications suggests that by using this approach, we can obtain 74% of the area savings that would be made by switching from dynamic to static scheduling, and 135% of the performance benefits that would be made by switching from static to dynamic scheduling.
 
 ## Building 
@@ -33,15 +35,29 @@ To install DASS, you can simply run:
 bash install.sh
 ```
 
-## Test Examples
+## How to use
 
-You can simply play with our examples in the `examples` folder:
+To use DASS, you can add pragma in your functions to specify which scheduling technique is applied, like:
+```
+foo(...){ // to be dynamically scheduled - Dynamatic
+#pragma DS 
+  g(...)
+}
+
+g(...){ // to be statically scheduled - Vivado HLS
+#pragma SS II=1
+// You can also add other pragmas that are supported by Vivado HLS, for expert use only.
+  ...
+}
+```
+Then the tool will automatically generate the hardware for you.
+
+You can simply play with our given examples in the `examples` folder:
 
 ```
 cd examples
 make name=gSum # Try gSum example
 ```
-
 Then you should have the output hardware under the `gSum/vhdl/` folder.
 
 ## Publication
