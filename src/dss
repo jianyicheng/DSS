@@ -10,7 +10,7 @@ then
 fi
 bash $NAME/_build/dynamic.sh | tee -a $NAME/_build/dhls.log
 cd $NAME/_build
-#$VHLS static.tcl | tee -a vhls.log
+$VHLS static.tcl | tee -a vhls.log
 if grep -Fxq "Error" $NAME/_build/vhls.log
 then
   echo "Error found in Vivado HLS, see $NAME/_build/vhls.log file"
