@@ -1,0 +1,2 @@
+call_0: g(int)
+  %call = call i32 @_Z1gi(i32 %"3")

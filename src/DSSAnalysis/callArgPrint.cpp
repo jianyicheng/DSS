@@ -49,7 +49,7 @@ void callArgPrint(std::vector<ENode*>* enode_dag, std::vector<BBNode*>* bbnode_d
         }
     }
     rpt.close();
-    errs() << "Input matching of the function calls finished.\n" ;
+    errs() << "Input matching of the function calls finished. Report saved in "<<fileName<<"\n" ;
 }
 
 void searchInstr(ENode* node){

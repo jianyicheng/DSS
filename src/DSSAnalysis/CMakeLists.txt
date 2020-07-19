@@ -2,6 +2,8 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(libsrc
     callArgPrint.cpp
+    DASS.cpp
+    memOpPrint.cpp
 )
 
 add_library(DSSAnalysis MODULE ${libsrc})

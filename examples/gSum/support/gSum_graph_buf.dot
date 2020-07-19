@@ -1,0 +1,206 @@
+// Number of blocks: 77
+// Number of channels: 114
+Digraph G {
+
+  // Blocks
+subgraph cluster_1 {
+color = "darkgreen"
+label = "block1"
+  brCst_block1 [type=Constant, in="in1:1", out="out1:1", bbID = 1, value="0x1", label=true,  shape=oval];
+  cst_0 [type=Constant, in="in1:32", out="out1:32", bbID = 1, value="0x0", label="0x0",  shape=oval];
+  cst_1 [type=Constant, in="in1:32", out="out1:32", bbID = 1, value="0x0", label="0x0",  shape=oval];
+  branch_0 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 1,  shape=oval];
+  branch_1 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 1,  shape=oval];
+  fork_5 [type=Fork, in="in1:1", out="out1:1 out2:1 out3:1", bbID = 1,  shape=oval];
+  start_0 [type=Entry, in="in1:0", out="out1:0", bbID = 1,  shape=oval];
+  forkC_10 [type=Fork, in="in1:0", out="out1:0 out2:0 out3:0 out4:0", bbID = 1,  shape=oval];
+  branchC_9 [type=Branch, in="in1:0 in2?:1", out="out1+:0 out2-:0", bbID = 1,  shape=oval];
+  _Buffer_3 [type=Buffer, in="in1:32", out="out1:32", bbID = 1, slots=1, transparent=false, label="_Buffer_3 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_4 [type=Buffer, in="in1:32", out="out1:32", bbID = 1, slots=1, transparent=false, label="_Buffer_4 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_9 [type=Buffer, in="in1:0", out="out1:0", bbID = 1, slots=1, transparent=false, label="_Buffer_9 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+}
+subgraph cluster_2 {
+color = "darkgreen"
+label = "block2"
+  phi_1 [type=Mux, in="in1?:1 in2:32 in3:32", out="out1:32", delay=0.366, bbID = 2, retimingDiff=1.83333,  shape=oval];
+  phi_2 [type=Mux, in="in1?:1 in2:32 in3:32", out="out1:32", delay=0.366, bbID = 2,  shape=oval];
+  load_5 [type=Operator, in="in1:32 in2:32", out="out1:32 out2:32", op = "mc_load_op", latency=2, bbID = 2, portID = 0, offset = 0, retimingDiff=1,  shape=oval];
+  cst_2 [type=Constant, in="in1:32", out="out1:32", bbID = 2, value="0x0", label="0x0", retimingDiff=1,  shape=oval];
+  icmp_6 [type=Operator, in="in1:32 in2:32", out="out1:1", op = "icmp_sgt_op", delay=1.53, bbID = 2, retimingDiff=1,  shape=oval];
+  fork_1 [type=Fork, in="in1:32", out="out1:32 out2:32", bbID = 2,  shape=oval];
+  fork_2 [type=Fork, in="in1:32", out="out1:32 out2:32", bbID = 2, retimingDiff=1,  shape=oval];
+  branch_2 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 2, retimingDiff=2.83333,  shape=oval];
+  branch_3 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 2, retimingDiff=1,  shape=oval];
+  branch_4 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 2, retimingDiff=1,  shape=oval];
+  fork_6 [type=Fork, in="in1:1", out="out1:1 out2:1 out3:1 out4:1", bbID = 2, retimingDiff=1,  shape=oval];
+  phiC_5 [type=CntrlMerge, in="in1:0 in2:0", out="out1:0 out2?:1", delay=0.166, bbID = 2,  shape=oval];
+  branchC_10 [type=Branch, in="in1:0 in2?:1", out="out1+:0 out2-:0", bbID = 2, retimingDiff=1,  shape=oval];
+  source_0 [type=Source, out="out1:32", bbID = 2, retimingDiff=1,  shape=oval];
+  fork_15 [type=Fork, in="in1:1", out="out1:1 out2:1", bbID = 2,  shape=oval];
+  _Buffer_1 [type=Buffer, in="in1:32", out="out1:32", bbID = 2, slots=1, transparent=false, label="_Buffer_1 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_2 [type=Buffer, in="in1:32", out="out1:32", bbID = 2, slots=2, transparent=false, label="_Buffer_2 [2]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_5 [type=Buffer, in="in1:1", out="out1:1", bbID = 2, slots=2, transparent=true, label="_Buffer_5 [2t]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_10 [type=Buffer, in="in1:0", out="out1:0", bbID = 2, slots=2, transparent=false, label="_Buffer_10 [2]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_13 [type=Buffer, in="in1:1", out="out1:1", bbID = 2, slots=2, transparent=true, label="_Buffer_13 [2t]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+}
+subgraph cluster_3 {
+color = "darkgreen"
+label = "block3"
+  call_0 [type=Operator, in="in1:32", out="out1:32", op = "call_op", latency=11, II=6, bbID = 3, function = "_Z1gi", retimingDiff=1.83333,  shape=oval];
+  add_8 [type=Operator, in="in1:32 in2:32", out="out1:32", op = "add_op", delay=1.693, bbID = 3, retimingDiff=2.83333,  shape=oval];
+  brCst_block3 [type=Constant, in="in1:1", out="out1:1", bbID = 3, value="0x1", label=true, retimingDiff=1,  shape=oval];
+  phi_n1 [type=Merge, in="in1:32", out="out1:32", bbID = 3, retimingDiff=1,  shape=oval];
+  phi_n2 [type=Merge, in="in1:32", out="out1:32", bbID = 3, retimingDiff=2.83333,  shape=oval];
+  phi_n3 [type=Merge, in="in1:32", out="out1:32", bbID = 3, retimingDiff=1,  shape=oval];
+  branch_5 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 3, retimingDiff=2.83333,  shape=oval];
+  branch_6 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 3, retimingDiff=1,  shape=oval];
+  fork_7 [type=Fork, in="in1:1", out="out1:1 out2:1 out3:1", bbID = 3, retimingDiff=1,  shape=oval];
+  phiC_6 [type=Merge, in="in1:0", out="out1:0", delay=0.166, bbID = 3, retimingDiff=1,  shape=oval];
+  forkC_12 [type=Fork, in="in1:0", out="out1:0 out2:0", bbID = 3, retimingDiff=1,  shape=oval];
+  branchC_11 [type=Branch, in="in1:0 in2?:1", out="out1+:0 out2-:0", bbID = 3, retimingDiff=1,  shape=oval];
+  _Buffer_6 [type=Buffer, in="in1:1", out="out1:1", bbID = 3, slots=2, transparent=true, label="_Buffer_6 [2t]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+}
+subgraph cluster_4 {
+color = "darkgreen"
+label = "block4"
+  phi_10 [type=Mux, in="in1?:1 in2:32 in3:32", out="out1:32", delay=0.366, bbID = 4, retimingDiff=2.83333,  shape=oval];
+  cst_3 [type=Constant, in="in1:32", out="out1:32", bbID = 4, value="0x1", label="0x1", retimingDiff=1,  shape=oval];
+  add_11 [type=Operator, in="in1:32 in2:32", out="out1:32", op = "add_op", delay=1.693, bbID = 4, retimingDiff=1,  shape=oval];
+  cst_4 [type=Constant, in="in1:32", out="out1:32", bbID = 4, value="0x3e8", label="0x3e8", retimingDiff=1,  shape=oval];
+  icmp_12 [type=Operator, in="in1:32 in2:32", out="out1:1", op = "icmp_ult_op", delay=1.53, bbID = 4, retimingDiff=1,  shape=oval];
+  phi_n0 [type=Merge, in="in1:32 in2:32", out="out1:32", delay=0.366, bbID = 4, retimingDiff=1,  shape=oval];
+  fork_4 [type=Fork, in="in1:32", out="out1:32 out2:32", bbID = 4, retimingDiff=1,  shape=oval];
+  branch_7 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 4, retimingDiff=2.83333,  shape=oval];
+  branch_8 [type=Branch, in="in1:32 in2?:1", out="out1+:32 out2-:32", bbID = 4, retimingDiff=1,  shape=oval];
+  fork_8 [type=Fork, in="in1:1", out="out1:1 out2:1 out3:1", bbID = 4, retimingDiff=1,  shape=oval];
+  phiC_7 [type=CntrlMerge, in="in1:0 in2:0", out="out1:0 out2?:1", delay=0.166, bbID = 4, retimingDiff=1,  shape=oval];
+  branchC_12 [type=Branch, in="in1:0 in2?:1", out="out1+:0 out2-:0", bbID = 4, retimingDiff=1,  shape=oval];
+  source_1 [type=Source, out="out1:32", bbID = 4, retimingDiff=1,  shape=oval];
+  source_2 [type=Source, out="out1:32", bbID = 4, retimingDiff=1,  shape=oval];
+  _Buffer_7 [type=Buffer, in="in1:32", out="out1:32", bbID = 4, slots=1, transparent=false, label="_Buffer_7 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_8 [type=Buffer, in="in1:1", out="out1:1", bbID = 4, slots=2, transparent=true, label="_Buffer_8 [2t]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_11 [type=Buffer, in="in1:1", out="out1:1", bbID = 4, slots=2, transparent=false, label="_Buffer_11 [2]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+  _Buffer_12 [type=Buffer, in="in1:0", out="out1:0", bbID = 4, slots=1, transparent=false, label="_Buffer_12 [1]",  shape=box, style=filled, fillcolor=darkolivegreen3, height = 0.4];
+}
+subgraph cluster_5 {
+color = "darkgreen"
+label = "block5"
+  ret_0 [type=Operator, in="in1:32", out="out1:32", op = "ret_op", bbID = 5,  shape=oval];
+  phi_n4 [type=Merge, in="in1:32", out="out1:32", bbID = 5,  shape=oval];
+  phiC_8 [type=Merge, in="in1:0", out="out1:0", delay=0.166, bbID = 5,  shape=oval];
+}
+  MC_A [type=MC, in="in1:32*l0a", out="out1:32*l0d out2:0*e", bbID = 0, memory = "A", bbcount = 0, ldcount = 1, stcount = 0, ];
+  end_0 [type=Exit, in="in1:0*e in2:32", out="out1:32", bbID = 0,  shape=oval];
+  sink_0 [type=Sink, in="in1:0", bbID = 0,  shape=oval];
+  sink_1 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_2 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_3 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_4 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_5 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_6 [type=Sink, in="in1:32", bbID = 0,  shape=oval];
+  sink_7 [type=Sink, in="in1:0", bbID = 0,  shape=oval];
+  sink_8 [type=Sink, in="in1:0", bbID = 0,  shape=oval];
+
+  // Channels
+  brCst_block1 -> fork_5 [from=out1, to=in1, arrowhead=normal, color=magenta];
+  cst_0 -> branch_0 [from=out1, to=in1, arrowhead=normal, color=red];
+  phi_1 -> _Buffer_1 [from=out1, to=in1, arrowhead=normal, color=red];
+  cst_1 -> branch_1 [from=out1, to=in1, arrowhead=normal, color=red];
+  phi_2 -> fork_1 [from=out1, to=in1, arrowhead=normal, color=red, slots=1, style=dotted, label="o", transparent=true];
+  load_5 -> fork_2 [from=out1, to=in1, arrowhead=normal, color=red];
+  load_5 -> MC_A [from=out2, to=in1, arrowhead=normal, color=darkgreen];
+  cst_2 -> icmp_6 [from=out1, to=in2, arrowhead=normal, color=red];
+  icmp_6 -> fork_6 [from=out1, to=in1, arrowhead=normal, color=magenta];
+  call_0 -> add_8 [from=out1, to=in2, arrowhead=normal, color=red];
+  add_8 -> branch_5 [from=out1, to=in1, arrowhead=normal, color=red];
+  brCst_block3 -> fork_7 [from=out1, to=in1, arrowhead=normal, color=magenta];
+  phi_10 -> branch_7 [from=out1, to=in1, arrowhead=normal, color=red, slots=1, style=dotted, label="o", transparent=true];
+  cst_3 -> add_11 [from=out1, to=in2, arrowhead=normal, color=red];
+  add_11 -> fork_4 [from=out1, to=in1, arrowhead=normal, color=red];
+  cst_4 -> icmp_12 [from=out1, to=in2, arrowhead=normal, color=red];
+  icmp_12 -> fork_8 [from=out1, to=in1, arrowhead=normal, color=magenta];
+  ret_0 -> end_0 [from=out1, to=in2, arrowhead=normal, color=darkgreen];
+  phi_n0 -> add_11 [from=out1, to=in1, arrowhead=normal, color=red, slots=1, style=dotted, label="o", transparent=true];
+  phi_n1 -> call_0 [from=out1, to=in1, arrowhead=normal, color=red];
+  phi_n2 -> add_8 [from=out1, to=in1, arrowhead=normal, color=red];
+  phi_n3 -> branch_6 [from=out1, to=in1, arrowhead=normal, color=red];
+  phi_n4 -> ret_0 [from=out1, to=in1, arrowhead=normal, color=red];
+  fork_1 -> load_5 [from=out1, to=in2, arrowhead=normal, color=red];
+  fork_1 -> _Buffer_2 [from=out2, to=in1, arrowhead=normal, color=red];
+  fork_2 -> icmp_6 [from=out1, to=in1, arrowhead=normal, color=red];
+  fork_2 -> branch_4 [from=out2, to=in1, arrowhead=normal, color=red];
+  fork_4 -> icmp_12 [from=out1, to=in1, arrowhead=normal, color=red];
+  fork_4 -> branch_8 [from=out2, to=in1, arrowhead=normal, color=red];
+  branch_0 -> _Buffer_3 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=red, constraint=false];
+  branch_0 -> sink_1 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  branch_1 -> _Buffer_4 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=red, constraint=false];
+  branch_1 -> sink_2 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  fork_5 -> branch_0 [from=out2, to=in2, arrowhead=obox, color=magenta];
+  fork_5 -> branch_1 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  fork_5 -> branchC_9 [from=out3, to=in2, arrowhead=obox, color=magenta];
+  branch_2 -> phi_10 [from=out2, to=in2, dir=both, arrowtail=odot, arrowhead=normal, color=blue];
+  branch_2 -> phi_n2 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=blue];
+  branch_3 -> phi_n0 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue];
+  branch_3 -> phi_n3 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=blue];
+  branch_4 -> phi_n1 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=blue];
+  branch_4 -> sink_3 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  fork_6 -> _Buffer_5 [from=out3, to=in1, arrowhead=normal, color=magenta];
+  fork_6 -> branch_3 [from=out2, to=in2, arrowhead=obox, color=magenta];
+  fork_6 -> branch_4 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  fork_6 -> branchC_10 [from=out4, to=in2, arrowhead=obox, color=magenta];
+  branch_5 -> phi_10 [from=out1, to=in3, dir=both, arrowtail=dot, arrowhead=normal, color=blue];
+  branch_5 -> sink_4 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  branch_6 -> phi_n0 [from=out1, to=in2, dir=both, arrowtail=dot, arrowhead=normal, color=blue];
+  branch_6 -> sink_5 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  fork_7 -> _Buffer_6 [from=out2, to=in1, arrowhead=normal, color=magenta];
+  fork_7 -> branch_6 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  fork_7 -> branchC_11 [from=out3, to=in2, arrowhead=obox, color=magenta];
+  branch_7 -> phi_1 [from=out1, to=in3, dir=both, arrowtail=dot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  branch_7 -> _Buffer_7 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=red, constraint=false];
+  branch_8 -> phi_2 [from=out1, to=in3, dir=both, arrowtail=dot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  branch_8 -> sink_6 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=blue, style=dashed, minlen = 3];
+  fork_8 -> _Buffer_8 [from=out2, to=in1, arrowhead=normal, color=magenta];
+  fork_8 -> branch_8 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  fork_8 -> branchC_12 [from=out3, to=in2, arrowhead=obox, color=magenta];
+  MC_A -> load_5 [from=out1, to=in1, arrowhead=normal, color=darkgreen];
+  MC_A -> end_0 [from=out2, to=in1, arrowhead=normal, color=gold3];
+  start_0 -> forkC_10 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  forkC_10 -> brCst_block1 [from=out4, to=in1, arrowhead=normal, color=gold3];
+  forkC_10 -> cst_0 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  forkC_10 -> cst_1 [from=out2, to=in1, arrowhead=normal, color=gold3];
+  forkC_10 -> branchC_9 [from=out3, to=in1, arrowhead=normal, color=gold3];
+  branchC_9 -> _Buffer_9 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=gold3, constraint=false];
+  branchC_9 -> sink_7 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=gold3, style=dashed, minlen = 3];
+  phiC_5 -> _Buffer_10 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  phiC_5 -> fork_15 [from=out2, to=in1, arrowhead=normal, color=magenta];
+  branchC_10 -> phiC_6 [from=out1, to=in1, dir=both, arrowtail=dot, arrowhead=normal, color=gold3];
+  branchC_10 -> phiC_7 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=gold3];
+  phiC_6 -> forkC_12 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  forkC_12 -> brCst_block3 [from=out2, to=in1, arrowhead=normal, color=gold3];
+  forkC_12 -> branchC_11 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  branchC_11 -> phiC_7 [from=out1, to=in2, dir=both, arrowtail=dot, arrowhead=normal, color=gold3];
+  branchC_11 -> sink_8 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=gold3, style=dashed, minlen = 3];
+  phiC_7 -> _Buffer_11 [from=out2, to=in1, arrowhead=normal, color=magenta];
+  phiC_7 -> branchC_12 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  branchC_12 -> phiC_5 [from=out1, to=in2, dir=both, arrowtail=dot, arrowhead=normal, color=gold3, style=dashed, minlen = 3];
+  branchC_12 -> _Buffer_12 [from=out2, to=in1, dir=both, arrowtail=odot, arrowhead=normal, color=gold3, constraint=false];
+  phiC_8 -> sink_0 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  source_0 -> cst_2 [from=out1, to=in1, arrowhead=normal, color=red];
+  source_1 -> cst_3 [from=out1, to=in1, arrowhead=normal, color=red];
+  source_2 -> cst_4 [from=out1, to=in1, arrowhead=normal, color=red];
+  fork_15 -> _Buffer_13 [from=out1, to=in1, arrowhead=normal, color=magenta];
+  fork_15 -> phi_2 [from=out2, to=in1, arrowhead=obox, color=magenta];
+  _Buffer_1 -> branch_2 [from=out1, to=in1, arrowhead=normal, color=red];
+  _Buffer_2 -> branch_3 [from=out1, to=in1, arrowhead=normal, color=red];
+  _Buffer_3 -> phi_1 [from=out1, to=in2, arrowhead=normal, color=darkgreen];
+  _Buffer_4 -> phi_2 [from=out1, to=in2, arrowhead=normal, color=darkgreen];
+  _Buffer_5 -> branch_2 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  _Buffer_6 -> branch_5 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  _Buffer_7 -> phi_n4 [from=out1, to=in1, arrowhead=normal, color=darkgreen];
+  _Buffer_8 -> branch_7 [from=out1, to=in2, arrowhead=obox, color=magenta];
+  _Buffer_9 -> phiC_5 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  _Buffer_10 -> branchC_10 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  _Buffer_11 -> phi_10 [from=out1, to=in1, arrowhead=obox, color=magenta];
+  _Buffer_12 -> phiC_8 [from=out1, to=in1, arrowhead=normal, color=gold3];
+  _Buffer_13 -> phi_1 [from=out1, to=in1, arrowhead=obox, color=magenta];
+}

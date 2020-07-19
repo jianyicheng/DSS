@@ -1,5 +1,5 @@
 # ====================================================
-# Dynamic & Static Scheduling v1.0
+# Dynamic & Static Scheduling v1.1
 #
 # This is the backend of DASS:
 # * extract the scheduling constraints
@@ -29,7 +29,7 @@ class hwPort:
         self.buff = []
 
 def arrayExtr(func):
-    ftemp = helper.fileOpen(top.name+"/_build/"+func+".cpp")
+    ftemp = helper.fileOpen(buildDir+"/"+func+".cpp")
     for line in ftemp:
         if " "+func+"(" in line.replace("\t", "") or " "+func+" " in line.replace("\t", ""):
             break;
@@ -59,9 +59,9 @@ def arrayExtr(func):
 
 def hwInterface(func):
     if func != top.name:
-        ftemp = helper.fileOpen(top.name+"/_build/ss_"+func+"/solution1/syn/vhdl/"+func+".vhd")
+        ftemp = helper.fileOpen(buildDir+"/ss_"+func+"/solution1/syn/vhdl/"+func+".vhd")
     else:
-        ftemp = helper.fileOpen(top.name+"/_build/ds_"+func+"/"+func+".vhd")
+        ftemp = helper.fileOpen(buildDir+"/ds_"+func+"/"+func+".vhd")
     startLine = -1
     endLine = -1
     buff = []
@@ -118,7 +118,9 @@ for line in buff:
 # Check if the frontend is correct
 print("--------------- Processing DS("+top.name+") -----------------")
 fL = helper.funcTree()
-ftemp = helper.fileOpen(top.name+"/_build/config.tcl")
+buildDir=top.name+"/_build/dss"
+vhdlDir=top.name+"/vhdl/dss"
+ftemp = helper.fileOpen(buildDir+"/config.tcl")
 temp = ftemp.readline().replace("\n","").split(",")
 if top.name != temp[0]:
     helper.error("Error: top function name does not match with config.tcl")
@@ -130,6 +132,7 @@ for line in ftemp:
     if temp[1] == '1':
         fL.name.append(temp[0])
         fL.ii.append(temp[2])
+        os.system("cp -r "+buildDir+"/ss_"+temp[0]+"/solution1/impl/ip "+vhdlDir+"/ss_"+temp[0])
     i = i+1
 ftemp.close()
 if i != i_max:
@@ -139,10 +142,10 @@ print("Front-end check finsihed - correct.")
 
 # Extract the timing information from the static circuit
 for function in fL.name:
-    ftemp = helper.fileOpen(top.name+"/_build/ss_"+function+"/solution1/syn/report/"+function+"_csynth.rpt")
+    ftemp = helper.fileOpen(buildDir+"/ss_"+function+"/solution1/syn/report/"+function+"_csynth.rpt")
     while True:
         line = ftemp.readline()
-        if "Latency (cycles)" in line:
+        if "Pipeline" in line:
             break;
     line = ftemp.readline()
     line = ftemp.readline()
@@ -151,9 +154,9 @@ for function in fL.name:
     line = line.split("|")
     fL.latency.append(int(line[2].replace(" ", "")))
     fL.compName.append("Unknown")
-    if int(line[6].replace(" ", "")) != fL.ii[fL.name.index(function)]:
-        helper.warning("Warning: function "+function + " does not achieve the expected II of " +fL.ii[fL.name.index(function)]+ ". The final II is " + line[6].replace(" ", "") +"!")
-        fL.ii[fL.name.index(function)] = int(line[6].replace(" ", ""))
+    if int(line[3].replace(" ", "")) != int(fL.ii[fL.name.index(function)]):
+        helper.warning("Warning: function "+function + " does not achieve the expected II of " +fL.ii[fL.name.index(function)]+ ". The final II is " + line[3].replace(" ", "") +"!")
+        fL.ii[fL.name.index(function)] = int(line[3].replace(" ", ""))
 if len(fL.latency) != len(fL.ii):
     helper.error("Error: latency extraction failed.")
     assert 0
@@ -161,12 +164,12 @@ print("Timing information of SS components extracted.")
 
 # added the time constraint of the static component into the dot graph of the dynamic circuit
 dotGraph = []
-ftemp = helper.fileOpen(top.name+"/_build/ds_"+top.name+"/"+top.name+"_graph.dot")
+ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/"+top.name+".dot")
 for line in ftemp:
     dotGraph.append(line)
 ftemp.close()
 funcConnect = []
-ftemp = helper.fileOpen(top.name+"/_build/ds_"+top.name+"/analysis.rpt")
+ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/"+top.name+"_call_arg_analysis.rpt")
 for line in ftemp:
     funcConnect.append(line)
 ftemp.close()
@@ -181,7 +184,7 @@ for line in dotGraph:
     if "call_" in line and "type" in line:
         # rewrite the declaration - sometimes Dynamatic has errors if the function has not return value
         line = line.replace("\"\"", "\"")
-        compName = line[1+line.find("\""):line.find("\"", line.find("\"")+1)]
+        compName = line[line.find("call_"):line.find(" ", line.find("call_")+1)-1]
         funcName = ""
         for i in funcConnect:
             if compName in i:
@@ -204,21 +207,20 @@ for line in dotGraph:
         line = line.replace(line[line.find("latency="):line.find(",", line.find("latency="))], "latency="+str(lat))
         line = line.replace(line[line.find("II="):line.find("]", line.find("II="))], "II="+str(ii))
     newDot.append(line)
-os.system("mv "+top.name+"/_build/ds_"+top.name+"/"+top.name+"_graph.dot "+top.name+"/_build/ds_"+top.name+"/"+top.name+"_graph_.dot")
-ftemp=open(top.name+"/_build/ds_"+top.name+"/"+top.name+"_.dot", "w")
+ftemp=open(buildDir+"/ds_"+top.name+"/"+top.name+".dot", "w")
 for line in newDot:
     ftemp.write(line)
 ftemp.close()
 print("Dot graph reconstructed.")
-
-print(dhls+"/Buffers/bin/buffers buffers 3 0.0 cbc "+top.name+"/_build/ds_"+top.name+"/"+top.name+"_.dot "+top.name+"/_build/ds_"+top.name+"/"+top.name+".dot > "+top.name+"/_build/ds_"+top.name+"/buffer.log")
-os.system(dhls+"/Buffers/bin/buffers buffers 3 0.0 cbc "+top.name+"/_build/ds_"+top.name+"/"+top.name+"_.dot "+top.name+"/_build/ds_"+top.name+"/"+top.name+".dot > "+top.name+"/_build/ds_"+top.name+"/buffer.log")
-print(dhls+"/dot2vhdl/bin/dot2vhdl "+top.name+"/_build/ds_"+top.name+"/"+top.name+" > "+top.name+"/_build/ds_"+top.name+"/dot2vhdl.log")
-os.system(dhls+"/dot2vhdl/bin/dot2vhdl "+top.name+"/_build/ds_"+top.name+"/"+top.name+" > "+top.name+"/_build/ds_"+top.name+"/dot2vhdl.log")
+if mode != "test":
+    #os.system(dhls+"/Buffers/bin/buffers buffers -filename="+buildDir+"/ds_"+top.name+"/"+top.name+" -period=10 | tee "+buildDir+"/ds_"+top.name+"/buff.log")
+    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+".dot "+buildDir+"/ds_"+top.name+"/"+top.name+"_.dot")
+    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+"_graph_buf.dot "+buildDir+"/ds_"+top.name+"/"+top.name+".dot")
+    os.system(dhls+"/dot2vhdl/bin/dot2vhdl "+buildDir+"/ds_"+top.name+"/"+top.name+" | tee "+buildDir+"/ds_"+top.name+"/dot2vhdl.log")
 
 # VHDL code generation
-## collect array interface for each function
-top.hwPort = hwInterface(top.name)
+## collect array interface for each function 
+top.hwPort = hwInterface(top.name)                          # JC debug here.
 top.arrays = arrayExtr(top.name)
 
 for function in fL.name:
@@ -245,21 +247,30 @@ for lst in fL.arrays:
                 assert 0
 
 ## rewrite the SS component interface in the DS architecture
+callList = []
+funcList = []
+ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/"+top.name+"_call_arg_analysis.rpt")
+for line in ftemp:
+    if "call_" in line:
+        callList.append(line[0:line.find(":")])
+        funcList.append(line[line.find(":")+2:line.find("(")])
+ftemp.close()
+
 dsVhdl = []
-ftemp = helper.fileOpen(top.name+"/_build/ds_"+top.name+"/"+top.name+".vhd")
+ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/"+top.name+".vhd")
 for line in ftemp:
     dsVhdl.append(line)
 ftemp.close()
 newVhdl = []
 insertComp = -1
 for line in dsVhdl:
-    for compName in fL.compName:
+    for compName in callList:
         if compName+": entity" in line:
             if insertComp != -1:
                 helper.error("Error: The netlist generation of component "+compName+" failed")
                 assert 0
-            insertComp = fL.compName.index(compName)
-            line = line.replace("call_op", "ss_"+fL.name[insertComp])
+            insertComp = fL.name.index(funcList[callList.index(compName)])
+            line = line.replace("call_op", "ss_"+funcList[callList.index(compName)])
             line = line[0:line.find(")\n")]+","+str(fL.latency[insertComp])+","+str(fL.ii[insertComp])+")\n"
             fL.hwCons.append(line)
             break
@@ -271,15 +282,15 @@ for line in dsVhdl:
                 if any(helper.vhdlVarName(line) in lst for lst in fL.arrays[insertComp].nL):
                     newVhdl.append("\t"+helper.vhdlSigName(line) + " => " + helper.vhdlSigName(line) + ",\n")
                 else:
-                    helper.error("Error: Unknown array name found in the SS hardware: "+helper.vhdlVarName(line))
-                    assert 0
+                    helper.warning("Warning: Unknown array name found in the SS hardware: "+helper.vhdlVarName(line)+". Ignore it if the variable is a constant input.")
+                    # skip constant input - already included in the data arrays
         insertComp = -1
     if "port (" in line and top.name in dsVhdl[dsVhdl.index(line)-1]:
         for pl in fL.hwPort:
             for port in pl.buff:
                 if "ap_" not in port and port.find("_") < port.find(":"):
                     newVhdl.append(port)
-ftemp=open(top.name+"/vhdl/"+top.name+".vhd", "w")
+ftemp=open(vhdlDir+"/"+top.name+".vhd", "w")
 for line in newVhdl:
     ftemp.write(line)
 ftemp.close()
@@ -320,8 +331,8 @@ for func in fL.name:
             if any(helper.vhdlVarName(line) in lst for lst in fL.arrays[i].nL):
                 wb.append(line)
             else:
-                helper.error("Error: Unknown array name found in the SS hardware: "+helper.vhdlVarName(line))
-                assert 0
+                helper.warning("Warning: Unknown array name found in the SS hardware ("+func+"): "+helper.vhdlVarName(line)+". Ignore it if the variable is a constant input.")
+                constr[0] = str(int(constr[0])-1)
     wb.append("\tclk, rst: in std_logic\n);\nend entity;\n\narchitecture arch of ss_"+func+" is\n\ncomponent "+func+" is\nport (\n")
     wb.extend(fL.hwPort[i].buff)
     wb.append(");\nend component;\n\n")
@@ -331,7 +342,7 @@ for func in fL.name:
             vl.append(helper.vhdlSigName(line))
             line = line.replace(" IN ", " ").replace(" in ", " ").replace(" OUT ", " ").replace(" out ", " ").replace(" INOUT ", " ").replace(" inout ", " ")
             wb.append("signal "+line[len(line) - len(line.lstrip()):])
-    wb.append("constant DEP: integer := "+str(int(math.ceil(fL.latency[i]/fL.ii[i])))+";\nsignal data_array : STD_LOGIC_VECTOR (DEP-1 downto 0);\nsignal preValid : STD_LOGIC;\n")
+    wb.append("constant DEP: integer := "+str(int(math.ceil(fL.latency[i]/int(fL.ii[i]))))+";\nsignal data_array : STD_LOGIC_VECTOR (DEP-1 downto 0);\nsignal preValid : STD_LOGIC;\n")
     # netlist construction
     wb.append("\nbegin\n\n")
     if "ap_clk" in vl and "ap_rst" in vl and "ap_start" in vl and "ap_done" in vl and "ap_ready" in vl and "ap_ce" in vl:
@@ -354,12 +365,13 @@ for func in fL.name:
     elif "ap_return" not in vl and int(constr[1]) == 0:
         wb.append("\tap_ce <= '1';\n")
     else:
-        helper.error("Error: Unknown outputs implementation - there may be more than one returned values")
+        helper.error("Error: Unknown outputs implementation for " +func+ " - there may be more than one returned values"+constr[1])
         assert 0
     if len(vl) == 0 and int(constr[0]) == 1:
         helper.warning("Warning: Number of input of IP does not match with the given constraints. This is only OK when you are calling a function with no input and adding an unused variable as the trigger.")
     elif len(vl) != int(constr[0]):
-        helper.error("Error: Number of input of IP does not match with the given constraints")
+        print(vl)
+        helper.error("Error: Number of input of IP "+func+" does not match with the given constraints - "+str(len(vl))+", "+constr[0])
         assert 0
     temp = "\tpreValid <= "
     for j in range(int(constr[0])):
@@ -371,7 +383,7 @@ for func in fL.name:
     elif int(constr[0]) == 1 and len(vl) == 1:
         wb.append("\t\t\t"+vl[0]+" <= dataInArray(0);\n")
     else:
-        ftemp = helper.fileOpen(top.name+"/_build/ds_"+top.name+"/analysis.rpt")
+        ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/analysis.rpt")
         line = ftemp.readline()
         while fL.compName[i]+": " not in line:
             line = ftemp.readline()
@@ -388,7 +400,7 @@ for func in fL.name:
                 for line in newDot:
                     if "\""+var+"\" -> \""+fL.compName[i]+"\"" in line:
                         input = line[line.find("\"in")+3:line.find("\"];")]
-                        wb.append("\t\t\t"+vl[k]+" <= dataInArray("+str(int(input)-1)+");\n")
+                        wb.append("\t\t\t"+vl[k]+" <= dataInArray("+str(int(input)-1)+");\n")               # JC: There may be a bug that one functions called in two places and have different port orders. Not sure...
                         k = k + 1
         else:
             helper.error("Error: Mismatch ports between analysis.rpt and dot graph")
@@ -406,13 +418,12 @@ for func in fL.name:
             wb.append(",\n")
     wb.append(");\n\nend architecture;\n\n--========================END=====================\n")
 
-    wrapper = open(top.name+"/vhdl/"+func+"_wrapper.vhd", "w")
+    wrapper = open(vhdlDir+"/"+func+"_wrapper.vhd", "w")
     for line in wb:
         wrapper.write(line)
     wrapper.close()
-if mode != "debug":
-  os.system("rm "+top.name+"/src/*_.cpp "+top.name+"/_build/*.ll "+top.name+"/_build/*.rpt "+top.name+"/_build/*.cpp ")
-    
+
+
 print("Back-end analysis finished successfully.")
 
 

@@ -1,5 +1,5 @@
 # ====================================================
-# Dynamic & Static Scheduling v1.0
+# Dynamic & Static Scheduling v1.1
 #
 # This is the front-end of DASS:
 # * construct the list of the source code
@@ -20,7 +20,6 @@ def funcSearch(parentI): # search for head files and called function
     global fI
     index = fI
     funcName = fT.name[index]
-    os.system("clang-check -ast-dump "+srcDir+"/"+funcName+".cpp --extra-arg=\"-fno-color-diagnostics\" -- >"+buildDir+"/"+funcName+"Ast.rpt")
     
     cppTemp = helper.fileOpen(srcDir+"/"+funcName+".cpp")
     buff = ""
@@ -46,7 +45,7 @@ def funcSearch(parentI): # search for head files and called function
     elif fT.ii[index] == 1:
         helper.error("Error: DS function ("+funcName+") is not allowed in a SS function("+fT.name[parentI]+")!")
     
-    astTemp = helper.fileOpen(buildDir+"/"+funcName+"Ast.rpt")
+    astTemp = helper.fileOpen(srcDir+"/"+funcName+"Ast.rpt")
     funcCheck = 0
     for line in astTemp:
         if ".h" in line and line[line.find("<")+1:line.find(".h")+2] not in hL:
@@ -73,24 +72,9 @@ def funcSearch(parentI): # search for head files and called function
         assert 0
     
 def dynamicCodeGen(index):
-    # NOTE: the current version of dynamatic does not support function calls and pointers, we ignore all the pointer arguments.
-    preCode = ""
-    ftemp = helper.fileOpen(srcDir+"/"+fT.name[index]+".cpp")
-    for line in ftemp:
-        preCode = preCode + line
-    ftemp.close()
-    preCode = helper.removeComment(preCode)
-    ftemp = open(srcDir+"/"+fT.name[index]+"_.cpp","w")
-    ftemp.write(preCode)
-    ftemp.close()
-    os.system("clang-check -ast-dump "+srcDir+"/"+fT.name[index]+"_.cpp --extra-arg=\"-fno-color-diagnostics\" -- >"+buildDir+"/"+fT.name[index]+"Ast_.rpt")
-    os.system("mv "+srcDir+"/"+fT.name[index]+"_.cpp "+buildDir+"/"+fT.name[index]+"_.cpp")
-    dynaSh.write("# function: "+fT.name[index]+"\ncp "+dss+"/examples/"+buildDir+"/"+fT.name[index]+".cpp ./\nmake name="+fT.name[index]+" graph\nrm -r "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"\ncp -r _build/"+fT.name[index]+" "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"\nmv "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/*_graph.dot "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/"+fT.name[index]+"_graph.dot\n")
-    
-    #../../Buffers/bin/buffers buffers 3 0.0 cbc _build/"+fT.name[index]+"/"+fT.name[index]+"_graph.dot _build/"+fT.name[index]+"/"+fT.name[index]+".dot\n../../dot2vhdl/bin/dot2vhdl _build/"+fT.name[index]+"/"+fT.name[index]+"\ncp _build/"+fT.name[index]+"/"+fT.name[index]+".vhd ../../DaSS/examples/"+vhdlDir+"\n\n")
-    
+    dynaSh.write("# function: "+fT.name[index]+"\ncp "+dss+"/examples/"+buildDir+"/"+fT.name[index]+".cpp ./\nmake name="+fT.name[index]+" graph\nrm -r "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"\nmv _build/"+fT.name[index]+" "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"\nif [ ! -f "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/"+fT.name[index]+"_graph.dot ]; then\n\tmv "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/*_graph.dot "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/"+fT.name[index]+"_graph.dot\nfi\ncp "+dss+"/examples/"+top+"/_build/ds/"+fT.name[index]+"_bbgraph.dot "+dss+"/examples/"+buildDir+"/ds_"+fT.name[index]+"/"+fT.name[index]+"_bbgraph.dot")
     astTemp=[]
-    ftemp=helper.fileOpen(buildDir+"/"+fT.name[index]+"Ast_.rpt")
+    ftemp=helper.fileOpen(srcDir+"/"+fT.name[index]+"Ast.rpt")
     for line in ftemp:
         astTemp.append(line)
     ftemp.close()
@@ -98,13 +82,14 @@ def dynamicCodeGen(index):
     astTemp.append("   ")
     astTemp.append("   ")   # in case it jump to the index out of the range
     cppTemp=[]
-    ftemp=helper.fileOpen(buildDir+"/"+fT.name[index]+"_.cpp")
+    ftemp=helper.fileOpen(srcDir+"/"+fT.name[index]+".cpp")
     for line in ftemp:
         cppTemp.append(line)
     ftemp.close()
     # find called function and remove memory interface
     funcProtpy = []
     i = 0
+    buffList = []
     while i < len(astTemp):
         if " Function " in astTemp[i]:
             funcName = astTemp[i][1+astTemp[i].find("'", astTemp[i].find(" Function ")):astTemp[i].find("'", astTemp[i].find("'", astTemp[i].find(" Function "))+1)]
@@ -179,7 +164,9 @@ def dynamicCodeGen(index):
                     k = k+", "+buff+" "+astTemp[j][astTemp[j].rfind(" ",0,astTemp[j].find("'")-1)+1:astTemp[j].find("'")-1]+");\n"
             else:
                 k = k+");\n"
-            funcProtpy.append(k)
+            if k not in buffList:
+                buffList.append(k)
+                funcProtpy.append(k)
         i = i+1
     ftemp=open(buildDir+"/"+fT.name[index]+".cpp", "w")
     for line in funcProtpy:
@@ -188,8 +175,6 @@ def dynamicCodeGen(index):
         if "#include \"" not in line:
             ftemp.write(line)
     ftemp.close()
-    if mode != "debug":
-        os.system("rm "+buildDir+"/"+fT.name[index]+"Ast_.rpt "+buildDir+"/"+fT.name[index]+"_.cpp")
 
 def staticCodeGen(index):
     iiCheck = 0
@@ -223,8 +208,6 @@ def staticCodeGen(index):
             for line in preCode:
                 ftemp.write(line)
             ftemp.close()
-            if mode != "debug":
-                os.system("rm "+srcDir+"/"+fT.name[index]+"_.cpp")
 
     statTcl.write("open_project -reset ss_"+fT.name[index]+"\nset_top "+fT.name[index]+"\nadd_files {")
     i = 0
@@ -244,8 +227,6 @@ def staticCodeGen(index):
     statTcl.write("config_interface -clock_enable\ncsynth_design\n")
     if hardware == "full":
         statTcl.write("export_design -flow syn -rtl vhdl -format ip_catalog\n\n")
-    statSh.write("cp -r "+buildDir+"/ss_"+fT.name[index]+"/solution1/impl/ip "+vhdlDir+"ss_"+fT.name[index]+"\n")
-
 
 fT = helper.funcTree()
 fT.name.append(top)
@@ -254,9 +235,9 @@ fT.ii.append(-1)
 hL = []
 cppL = []
 fI = 0
-buildDir=top+"/_build"
-srcDir=top+"/src"
-vhdlDir=top+"/vhdl/"
+buildDir=top+"/_build/dss"
+srcDir=top+"/_build/dss/src"
+vhdlDir=top+"/vhdl/dss"
 buff = []
 ftemp=helper.fileOpen("../env.tcl")
 for line in ftemp:
@@ -268,25 +249,17 @@ ftemp.close()
 for line in buff:
     if "DSS=" in line:
         dss = helper.findPath(line, buff).replace("\n","")
-        print("DSS="+dss)
     if "CLANG=" in line:
         clang = helper.findPath(line, buff).replace("\n","")
-        print("CLANG="+clang)
     if "VHLS=" in line:
         vhls = helper.findPath(line, buff).replace("\n","")
-        print("VHLS="+vhls)
     if "OPT=" in line:
         opt = helper.findPath(line, buff).replace("\n","")
-        print("OPT="+opt)
     if "DHLS=" in line:
         dhls = helper.findPath(line, buff).replace("\n","")
-        print("DHLS="+dhls)
-os.system("mkdir "+buildDir)
-os.system("mkdir "+vhdlDir)
-os.system("cp "+dhls+"/components/*.vhd "+vhdlDir)
 
 print("Top function '"+top+"'.("+mode+") Start preprocessing...")
-print("--------------- Processing SS -----------------")
+print("--------------- DSS Synthesis -----------------")
 
 funcSearch(-1)
 
@@ -299,8 +272,6 @@ ftemp=open(buildDir+"/config.tcl", "w")
 ftemp.write(top+","+str(len(fT.name))+"\n")
 i = 0
 while (i<len(fT.name)):
-    if mode != "debug":
-        os.system("rm "+buildDir+"/"+fT.name[i]+"Ast.rpt")
     ftemp.write(fT.name[i]+","+str(fT.sch[i])+","+str(fT.ii[i])+"\n")
     print(str(i)+". Function '"+fT.name[i]+"' is scheduled in ", end="")
     print("SS with II = "+str(fT.ii[i]) if fT.sch[i] else "DS")
@@ -318,22 +289,9 @@ while (i<len(cppL)):
     i = i+1
 ftemp.close()
 
-nL = ""
-for n in fT.name:
-    os.system(clang+" -Xclang -disable-O0-optnone -emit-llvm -S -c "+srcDir+"/"+n+".cpp -o "+buildDir+"/"+n+".ll")
-    nL = nL + " "+buildDir+"/" +n+".ll"
-
-os.system("llvm-link -S "+nL+" > "+buildDir+"/"+top+"Merged.ll")
-os.system(opt+" -mem2reg  "+buildDir+"/"+top+"Merged.ll -S -o "+buildDir+"/"+top+"Analysis.ll")
-
-if mode != "debug":
-    os.system("rm "+nL+" "+buildDir+"/"+top+"Merged.ll")
-
 dynaSh=open(buildDir+"/dynamic.sh", "w")
 dynaSh.write("#!/bin/sh\nDHLS_EX="+dhls+"/elastic-circuits/examples/\n\ncd $DHLS_EX\n".replace("//", "/"))
 statTcl=open(buildDir+"/static.tcl", "w")
-statSh=open(buildDir+"/static.sh", "w")
-statSh.write("#!/bin/sh\n\n")
 
 i = 0
 while (i<len(fT.sch)):
@@ -344,7 +302,8 @@ while (i<len(fT.sch)):
     i = i+1
 dynaSh.close()
 statTcl.close()
-statSh.close()
 
 
 print("Front-end analysis finished successfully.")
+
+#  statSh.write("cp -r "+buildDir+"/ss_"+fT.name[index]+"/solution1/impl/ip "+vhdlDir+"ss_"+fT.name[index]+"\n")

@@ -1,0 +1,15 @@
+Digraph G {
+	splines=spline;
+//DHLS version: 0.1.1" [shape = "none" pos = "20,20!"]
+		"block1";
+		"block2";
+		"block3";
+		"block4";
+		"block5";
+		"block1" -> "block2" [color = "blue", freq = 1];
+		"block2" -> "block3" [color = "blue", freq = 500];
+		"block2" -> "block4" [color = "blue", freq = 500];
+		"block3" -> "block4" [color = "blue", freq = 500];
+		"block4" -> "block2" [color = "red", freq = 999];
+		"block4" -> "block5" [color = "blue", freq = 1];
+}

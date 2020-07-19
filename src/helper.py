@@ -7,7 +7,7 @@
 # ====================================================
 
 from __future__ import print_function
-import os, fnmatch, datetime, sys, re
+import os, fnmatch, datetime, sys, re, subprocess
 
 def removeComment(text):
     def replacer(match):
@@ -90,6 +90,8 @@ def findPath(text, textList):
     while "$" in temp:
         if "$"+textList[i][0:textList[i].find("=")] in temp:
             temp = temp.replace("$"+textList[i][0:textList[i].find("=")],textList[i][textList[i].find("=")+1:]).replace("\n", "")
+        elif "${"+textList[i][0:textList[i].find("=")]+"}" in temp:
+            temp = temp.replace("${"+textList[i][0:textList[i].find("=")]+"}",textList[i][textList[i].find("=")+1:]).replace("\n", "")
         if i == textList.index(text)-1:
             i = 0
         else:

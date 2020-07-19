@@ -4,10 +4,13 @@
 
 # This is the script in case you do not have dynamatic
 # If you have installed dynamatic, please change the directory in the env.tcl file
-git clone https://github.com/JianyiCheng/dynamatic.git
+
+# Install Dynamatic
+git clone https://github.com/lana555/dynamatic.git
 bash dhls_install.sh
 
-
+sudo apt install python-pip clang-tools
+pip install cxxfilt
 if ! grep -q "DSS" env.tcl; then
   echo "DSS="$PWD >> env.tcl
 else
@@ -21,8 +24,8 @@ if ! grep -q "add_subdirectory(DSSAnalysis)" $DHLS/elastic-circuits/CMakeLists.t
 fi
 cp -r src/DSSAnalysis $DHLS/elastic-circuits/
 cp -r src/include/DSSAnalysis $DHLS/elastic-circuits/include/
-if ! grep -q "callArgPrint(enode_dag, bbnode_dag, (opt_cfgOutdir + \"\/analysis.rpt\").c_str());" $DHLS/elastic-circuits/MyCFGPass/MyCFGPass.cpp; then
-  sed -i 's/circuitGen->sanityCheckVanilla(enode_dag);/circuitGen->sanityCheckVanilla(enode_dag);\n\t\tcallArgPrint(enode_dag, bbnode_dag, (opt_cfgOutdir + \"\/analysis.rpt\").c_str());\n/' $DHLS/elastic-circuits/MyCFGPass/MyCFGPass.cpp
+if ! grep -q "std::string func_name = demangle(fname.c_str());\n\t\tDASS(enode_dag, bbnode_dag, (opt_cfgOutdir+\"/\"+func_name.substr(0, func_name.find(\"(\"))+\"_\").c_str());\n" $DHLS/elastic-circuits/MyCFGPass/MyCFGPass.cpp; then
+  sed -i 's|circuitGen->sanityCheckVanilla(enode_dag);|circuitGen->sanityCheckVanilla(enode_dag);\nstd::string func_name = demangle(fname.c_str());\n\t\tDASS(enode_dag, bbnode_dag, (opt_cfgOutdir+\"/\"+func_name.substr(0, func_name.find(\"(\"))+\"_\").c_str());\n|' $DHLS/elastic-circuits/MyCFGPass/MyCFGPass.cpp
   sed -i 's|#include "OptimizeBitwidth/OptimizeBitwidth.h"|#include "OptimizeBitwidth/OptimizeBitwidth.h"\n#include "DSSAnalysis/DSSAnalysis.h"\n|' $DHLS/elastic-circuits/MyCFGPass/MyCFGPass.cpp
 fi
 cd $DHLS/elastic-circuits/_build/
