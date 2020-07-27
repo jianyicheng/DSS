@@ -176,11 +176,11 @@ ftemp.close()
 
 newDot = []
 for line in dotGraph:
-    if "end_" in line and "type" in line and "out" in line: # This is a bug in dynamatic
-        if line.find(",",line.find("out =")) == -1:
-            line = line.replace(line[line.find(",", line.find("in =")):line.find("]")], "")
-        else:
-            line = line.replace(line[line.find("out ="):line.find(",",line.find("out ="))+1], "")
+    #if "end_" in line and "type" in line and "out" in line: # This is a bug in dynamatic
+    #    if line.find(",",line.find("out =")) == -1:
+    #        line = line.replace(line[line.find(",", line.find("in =")):line.find("]")], "")
+    #    else:
+    #        line = line.replace(line[line.find("out ="):line.find(",",line.find("out ="))+1], "")
     if "call_" in line and "type" in line:
         # rewrite the declaration - sometimes Dynamatic has errors if the function has not return value
         line = line.replace("\"\"", "\"")
@@ -213,9 +213,9 @@ for line in newDot:
 ftemp.close()
 print("Dot graph reconstructed.")
 if mode != "test":
-    #os.system(dhls+"/Buffers/bin/buffers buffers -filename="+buildDir+"/ds_"+top.name+"/"+top.name+" -period=10 | tee "+buildDir+"/ds_"+top.name+"/buff.log")
-    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+".dot "+buildDir+"/ds_"+top.name+"/"+top.name+"_.dot")
-    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+"_graph_buf.dot "+buildDir+"/ds_"+top.name+"/"+top.name+".dot")
+    os.system(dhls+"/Buffers/bin/buffers buffers -filename="+buildDir+"/ds_"+top.name+"/"+top.name+" -period=10 | tee "+buildDir+"/ds_"+top.name+"/buff.log")
+    os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+".dot "+buildDir+"/ds_"+top.name+"/"+top.name+"_.dot")
+    os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+"_graph_buf.dot "+buildDir+"/ds_"+top.name+"/"+top.name+".dot")
     os.system(dhls+"/dot2vhdl/bin/dot2vhdl "+buildDir+"/ds_"+top.name+"/"+top.name+" | tee "+buildDir+"/ds_"+top.name+"/dot2vhdl.log")
 
 # VHDL code generation
@@ -322,7 +322,7 @@ for func in fL.name:
         helper.error("Error: Found an function with no input - this is not allowed. Please use an unused variable like the loop iteratior as a trigger.")
         assert 0
     if int(constr[1]) != 0:
-        wb.append("\tdataOutArray : out data_array (0 downto 0)(DATA_SIZE_OUT downto 0);\n")
+        wb.append("\tdataOutArray : out data_array (0 downto 0)(DATA_SIZE_OUT-1 downto 0);\n")
         wb.append("\tnReadyArray: in std_logic_vector(OUTPUTS-1 downto 0);\n")
         wb.append("\tvalidArray: out std_logic_vector(OUTPUTS-1 downto 0);\n")
     buff = fL.hwPort[i].buff
@@ -340,13 +340,13 @@ for func in fL.name:
     for line in buff:
         if "ap_" in line or line.find("_") > line.find(":"):
             vl.append(helper.vhdlSigName(line))
-            line = line.replace(" IN ", " ").replace(" in ", " ").replace(" OUT ", " ").replace(" out ", " ").replace(" INOUT ", " ").replace(" inout ", " ")
+            line = line.replace(" IN ", " ").replace(" in ", " ").replace(" OUT ", " ").replace(" out ", " ").replace(" INOUT ", " ").replace(" inout ", " ").replace(") );", ");")
             wb.append("signal "+line[len(line) - len(line.lstrip()):])
-    wb.append("constant DEP: integer := "+str(int(math.ceil(fL.latency[i]/int(fL.ii[i]))))+";\nsignal data_array : STD_LOGIC_VECTOR (DEP-1 downto 0);\nsignal preValid : STD_LOGIC;\n")
+    #wb.append("signal preValid : STD_LOGIC;\n") # signal nextReady : STD_LOGIC; multi-output TODO
     # netlist construction
     wb.append("\nbegin\n\n")
     if "ap_clk" in vl and "ap_rst" in vl and "ap_start" in vl and "ap_done" in vl and "ap_ready" in vl and "ap_ce" in vl:
-        wb.append("\tap_clk <= clk;\n\tap_rst <= rst;\n\tap_start <= '1';\n\tvalidArray(0) <= data_array(0) and ap_done;\n\treadyArray(0) <= ap_ready and ap_ce;\n")
+        wb.append("\tap_clk <= clk;\n\tap_rst <= rst;\n\tprocess(rst, pValidArray)\n\tbegin\n\t\tif rst = '1' then\n\t\t\tap_start <= '0';\n\t\telsif or pValidArray = '1' then\n\t\t\tap_start <= '1';\n\t\tend if;\n\tend process;\n\tvalidArray(0) <= ap_done;\n")
         vl.remove("ap_clk")
         vl.remove("ap_rst")
         vl.remove("ap_start")
@@ -361,29 +361,31 @@ for func in fL.name:
     if "ap_return" in vl and int(constr[1]) == 1:
         vl.remove("ap_return")
         wb.append("\tdataOutArray(0) <= ap_return;\n")
-        wb.append("\tap_ce <= not (not nReadyArray(0) and data_array(0));\n")
+        wb.append("\tap_ce <= not (ap_done and not nReadyArray(0));\n")
     elif "ap_return" not in vl and int(constr[1]) == 0:
         wb.append("\tap_ce <= '1';\n")
     else:
         helper.error("Error: Unknown outputs implementation for " +func+ " - there may be more than one returned values"+constr[1])
         assert 0
-    if len(vl) == 0 and int(constr[0]) == 1:
+    if len(vl)/3 == 0 and int(constr[0]) == 1:
         helper.warning("Warning: Number of input of IP does not match with the given constraints. This is only OK when you are calling a function with no input and adding an unused variable as the trigger.")
-    elif len(vl) != int(constr[0]):
-        print(vl)
+    elif len(vl)/3 != int(constr[0]): # ack, vld, data / 3
         helper.error("Error: Number of input of IP "+func+" does not match with the given constraints - "+str(len(vl))+", "+constr[0])
         assert 0
-    temp = "\tpreValid <= "
-    for j in range(int(constr[0])):
-        temp = temp + "pValidArray("+str(j)+") and "
-    wb.append(temp[0:len(temp)-5]+";\n\n")
-    wb.append("\tprocess(pValidArray)\n\tbegin\n\t\tif preValid = '1' then\n")
-    if int(constr[0]) == 1 and len(vl) == 0:
+
+    # preValid signals
+    #temp = "\tpreValid <= "
+    #for j in range(int(constr[0])):
+    #    temp = temp + "pValidArray("+str(j)+") and "
+    #wb.append(temp[0:len(temp)-5]+";\n\n")
+
+    # dataIn signals - data, pValid, ready
+    if int(constr[0]) == 1 and len(vl)/3 == 0:
         pass
-    elif int(constr[0]) == 1 and len(vl) == 1:
-        wb.append("\t\t\t"+vl[0]+" <= dataInArray(0);\n")
+    elif int(constr[0]) == 1 and len(vl)/3 == 1:
+        wb.append("\t"+vl[0]+" <= dataInArray(0);\n\t"+vl[0]+"_ap_vld <= pValidArray(0);\n\tprocess("+vl[0]+"_ap_ack, rst, ap_ready)\n\tbegin\n\t\tif rst = '1' then\n\t\t\treadyArray(0) <= '1';\n\t\telsif "+vl[0]+"_ap_ack = '1' then\n\t\t\treadyArray(0) <= ap_ready;\n\t\telse\n\t\t\treadyArray(0) <= '1';\n\t\tend if;\n\tend process;")
     else:
-        ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/analysis.rpt")
+        ftemp = helper.fileOpen(buildDir+"/ds_"+top.name+"/"+top.name+"_call_arg_analysis.rpt") # JC: bug here0
         line = ftemp.readline()
         while fL.compName[i]+": " not in line:
             line = ftemp.readline()
@@ -394,22 +396,20 @@ for func in fL.name:
             if "from: " in line:
                 temp.append(line[line.find(": ")+2:line.find(":\n")])
         ftemp.close()
-        if len(temp) == len(vl):
+        if len(temp) == len(vl)/3:
             k = 0
             for var in temp:
                 for line in newDot:
                     if "\""+var+"\" -> \""+fL.compName[i]+"\"" in line:
                         input = line[line.find("\"in")+3:line.find("\"];")]
-                        wb.append("\t\t\t"+vl[k]+" <= dataInArray("+str(int(input)-1)+");\n")               # JC: There may be a bug that one functions called in two places and have different port orders. Not sure...
+                        wb.append("\t"+vl[k]+" <= dataInArray("+str(int(input)-1)+");\n\t"+vl[k]+"_ap_vld <= pValidArray("+str(int(input)-1)+");\n\n\tprocess("+vl[0]+"_ap_ack, rst, ap_ready)\n\tbegin\n\t\tif rst = '1' then\n\t\t\treadyArray("+str(int(input)-1)+") <= '1';\n\t\telsif "+vl[0]+"_ap_ack = '1' then\n\t\t\treadyArray("+str(int(input)-1)+") <= ap_ready;\n\t\telse\n\t\t\treadyArray("+str(int(input)-1)+") <= '1';\n\t\tend if;\n\tend process;\n")               # JC: There may be a bug that one functions called in two places and have different port orders. To be fixed when it happens...
                         k = k + 1
         else:
-            helper.error("Error: Mismatch ports between analysis.rpt and dot graph")
+            helper.error("Error: Mismatch ports between "+top.name+"_call_arg_analysis.rpt and dot graph")
             assert 0
-    # here we load array vars
-    wb.append("\t\tend if;\n\tend process;\n\n")
-    wb.append("\tprocess(clk)\n\tbegin\n\t\tif rising_edge (clk) then\n\t\t\tif rst = '1' then\n\t\t\t\tdata_array <= (others => '0');\n\t\t\telsif ap_ce = '1' then\n\t\t\t\tif (ap_ready = '1') then\n\t\t\t\t\tif (preValid = '1') then\n\t\t\t\t\t\tdata_array <= \"1\" & data_array (DEP-1 downto 1);\n\t\t\t\t\telse\n\t\t\t\t\t\tdata_array <= \"0\" & data_array (DEP-1 downto 1);\n\t\t\t\t\tend if;\n\t\t\t\tend if;\n\t\t\tend if;\n\t\tend if;\n\tend process;\n\n")
+    
     # included ip
-    wb.append("func: "+func+"\nport map (\n")
+    wb.append("\nfunc: "+func+"\nport map (\n")
     for line in buff:
         wb.append("\t"+helper.vhdlSigName(line) + " => " + helper.vhdlSigName(line))
         if buff.index(line) == len(buff)-1:
