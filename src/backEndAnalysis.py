@@ -213,9 +213,9 @@ for line in newDot:
 ftemp.close()
 print("Dot graph reconstructed.")
 if mode != "test":
-    os.system(dhls+"/Buffers/bin/buffers buffers -filename="+buildDir+"/ds_"+top.name+"/"+top.name+" -period=10 | tee "+buildDir+"/ds_"+top.name+"/buff.log")
-    os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+".dot "+buildDir+"/ds_"+top.name+"/"+top.name+"_.dot")
-    os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+"_graph_buf.dot "+buildDir+"/ds_"+top.name+"/"+top.name+".dot")
+    #os.system(dhls+"/Buffers/bin/buffers buffers -filename="+buildDir+"/ds_"+top.name+"/"+top.name+" -period=10 | tee "+buildDir+"/ds_"+top.name+"/buff.log")
+    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+".dot "+buildDir+"/ds_"+top.name+"/"+top.name+"_.dot")
+    #os.system("mv "+buildDir+"/ds_"+top.name+"/"+top.name+"_graph_buf.dot "+buildDir+"/ds_"+top.name+"/"+top.name+".dot")
     os.system(dhls+"/dot2vhdl/bin/dot2vhdl "+buildDir+"/ds_"+top.name+"/"+top.name+" | tee "+buildDir+"/ds_"+top.name+"/dot2vhdl.log")
 
 # VHDL code generation
