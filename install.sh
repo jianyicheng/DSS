@@ -5,9 +5,6 @@
 # This is the script in case you do not have dynamatic
 # If you have installed dynamatic, please change the directory in the env.tcl file
 
-git clone https://github.com/lana555/dynamatic.git
-bash dhls_install.sh
-
 sudo apt install python-pip clang-tools
 pip install cxxfilt
 if ! grep -q "DSS" env.tcl; then
@@ -16,6 +13,9 @@ else
   sed -i "s|DSS=.*|DSS=$PWD|" env.tcl
 fi
 . env.tcl
+
+git clone https://github.com/lana555/dynamatic.git
+bash dhls_install.sh
 
 # Installing DSS analysis pass
 if ! grep -q "add_subdirectory(DSSAnalysis)" $DHLS/elastic-circuits/CMakeLists.txt; then

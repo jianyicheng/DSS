@@ -1,7 +1,7 @@
 #!make
 include ../env.tcl
 
-BENCH = gSum vecTrans
+BENCH = gSum vecTrans2
 BUILDDIR_FILE = $(name)/_build
 BUILDDIR_DS = $(BUILDDIR_FILE)/ds
 BUILDDIR_DSS = $(BUILDDIR_FILE)/dss
