@@ -1,7 +1,7 @@
 #!make
 include ../env.tcl
 
-BENCH = gSum
+BENCH = gSum vecTrans
 BUILDDIR_FILE = $(name)/_build
 BUILDDIR_DS = $(BUILDDIR_FILE)/ds
 BUILDDIR_DSS = $(BUILDDIR_FILE)/dss
@@ -11,16 +11,14 @@ VHDLDIR_FILE = $(name)/vhdl
 VHDLDIR_DS = $(VHDLDIR_FILE)/ds
 VHDLDIR_SS = $(VHDLDIR_FILE)/ss
 VHDLDIR_DSS = $(VHDLDIR_FILE)/dss
+SIMDIR = $(name)/sim
 #CLANG = ../llvm-6.0/bin/clang
 #OPT = ../llvm-6.0/bin/opt
 
 
 default: dss
 
-demo: ds_frontend
-	cp $(name)/support/$(name).dot $(name)/_build/ds
-	cp $(name)/support/$(name)_bbgraph.dot $(name)/_build/ds/
-	cp $(name)/support/$(name)_call_arg_analysis.rpt $(name)/_build/ds/
+dss: ds_frontend
 	python $(DSS)/src/bb_fix.py $(name) ds unbuf
 	mkdir -p $(BUILDDIR_DSS)
 	rm -rf $(BUILDDIR_DSS)/*
@@ -30,31 +28,11 @@ demo: ds_frontend
 	rm -rf $(VHDLDIR_DSS)/*
 	cp -r $(BUILDDIR_DS) $(BUILDDIR_DSS)/ds_$(name)
 	@python $(DSS)/src/preprocess_dss.py $(name)
-	@python $(DSS)/src/frontEndAnalysis.py $(name) || (echo "Error: DSS synthesis failed at the front end."; exit 3)
+	@python $(DSS)/src/frontEndAnalysis.py $(name) release full|| (echo "Error: DSS synthesis failed at the front end."; exit 3)
 	@echo "Synthesising SS functions..."
 	@cd $(BUILDDIR_DSS); $(VHLS) static.tcl || (echo "Error: SS in DSS synthesis failed."; exit 3)
 	@echo "Synthesising DS functions..."
-	#@bash $(BUILDDIR_DSS)/dynamic.sh || (echo "Error: DS in DSS synthesis failed."; exit 3)
-	cp $(name)/support/$(name)_graph_buf.dot $(BUILDDIR_DSS)/ds_$(name)/$(name).dot
-	@python $(DSS)/src/backEndAnalysis.py $(name) || (echo "Error: DSS synthesis failed at the back end."; exit 3)
-	@echo "DSS synthesis done."
-
-
-dss: ds_frontend
-	python $(DSS)/src/bb_fix.py $(name) ds unbuf
-	mkdir -p $(BUILDDIR_DSS)
-	mkdir -p $(BUILDDIR_DSS)/src
-	mkdir -p $(VHDLDIR_FILE)
-	mkdir -p $(VHDLDIR_DSS)
-	rm -rf $(BUILDDIR_DSS)/*
-	cp -r $(BUILDDIR_DS) $(BUILDDIR_DSS)/ds_$(name)
-	@python $(DSS)/src/preprocess_dss.py $(name)
-	@python $(DSS)/src/frontEndAnalysis.py $(name) || (echo "Error: DSS synthesis failed at the front end."; exit 3)
-	@echo "Synthesising SS functions..."
-	@cd $(BUILDDIR_DSS); $(VHLS) static.tcl || (echo "Error: SS in DSS synthesis failed."; exit 3)
-	@echo "Synthesising DS functions..."
-	#@bash $(BUILDDIR_DSS)/dynamic.sh || (echo "Error: DS in DSS synthesis failed."; exit 3)
-	@python $(DSS)/src/backEndAnalysis.py $(name) || (echo "Error: DSS synthesis failed at the back end."; exit 3)
+	@python $(DSS)/src_1/backEndAnalysis.py $(name) release full || (echo "Error: DSS synthesis failed at the back end."; exit 3)
 	@echo "DSS synthesis done."
 
 ds: 
@@ -65,9 +43,10 @@ ds_backend:
 	$(DHLS)/Buffers/bin/buffers buffers -filename=$(BUILDDIR_DS)/$(name) -period=10 || (echo "Error: Buffering DS circuit failed."; exit 3)
 	cp $(BUILDDIR_DS)/$(name)_graph_buf.dot $(BUILDDIR_DS)/$(name).dot
 	$(DHLS)/dot2vhdl/bin/dot2vhdl $(BUILDDIR_DS)/$(name)
-	mkdir -p $(VHDLDIR_FILE)
-	mkdir -p $(VHDLDIR_DS)
-	cp $(BUILDDIR_DS)/*.vhd $(VHDLDIR_DS)
+	@mv LSQ* $(BUILDDIR_DS)
+	@mkdir -p $(VHDLDIR_FILE)
+	@mkdir -p $(VHDLDIR_DS)
+	@cp $(BUILDDIR_DS)/*.v* $(VHDLDIR_DS)
 	@echo "DS synthesis done."
 
 ds_frontend: csim
@@ -81,7 +60,7 @@ ds_frontend: csim
 	@$(OPT) -loop-rotate -constprop  $(BUILDDIR_DS)/$(name)_mem2reg.ll -S -o $(BUILDDIR_DS)/$(name)_mem2reg_constprop.ll
 	@$(OPT) -simplifycfg $(BUILDDIR_DS)/$(name)_mem2reg_constprop.ll -S -o $(BUILDDIR_DS)/$(name)_mem2reg_constprop_simplifycfg.ll
 	@$(OPT) -die -instcombine -lowerswitch $(BUILDDIR_DS)/$(name)_mem2reg_constprop_simplifycfg.ll -S -o $(BUILDDIR_DS)/$(name)_mem2reg_constprop_simplifycfg_die.ll
-	@cc -c ../dynamatic/elastic-circuits/FrequencyCounterPass/log_FrequencyCounter.c
+	@cc -c $(DHLS)/elastic-circuits/FrequencyCounterPass/log_FrequencyCounter.c
 	@$(CLANG) -fPIC -Xclang -load -Xclang $(DS_BUILD)/FrequencyCounterPass/libFrequencyCounterPass.so -c $(BUILDDIR_DS)/$(name)_mem2reg_constprop_simplifycfg_die.ll
 	@cc -fPIC $(name)_mem2reg_constprop_simplifycfg_die.o log_FrequencyCounter.o
 	@./a.out
