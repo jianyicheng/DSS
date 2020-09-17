@@ -32,7 +32,7 @@ dss: ds_frontend
 	@echo "Synthesising SS functions..."
 	@cd $(BUILDDIR_DSS); $(VHLS) static.tcl || (echo "Error: SS in DSS synthesis failed."; exit 3)
 	@echo "Synthesising DS functions..."
-	@python $(DSS)/src_1/backEndAnalysis.py $(name) release full || (echo "Error: DSS synthesis failed at the back end."; exit 3)
+	@python $(DSS)/src/backEndAnalysis.py $(name) release full || (echo "Error: DSS synthesis failed at the back end."; exit 3)
 	@echo "DSS synthesis done."
 
 ds: 
