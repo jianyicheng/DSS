@@ -10,6 +10,8 @@ st = sys.argv[3] if len(sys.argv) > 3 else "unbuf"
 buildDir=top+"/_build/"+sch
 if st == "buf":
 	ftemp = helper.fileOpen(buildDir+"/"+top+"_graph_buf.dot")
+elif sch == "dss":
+	ftemp = helper.fileOpen(buildDir+"/ds_"+top+"/"+top+".dot")
 else:
 	ftemp = helper.fileOpen(buildDir+"/"+top+".dot")
 
@@ -20,8 +22,11 @@ ftemp.close()
 
 if st == "buf":
 	ftemp = helper.fileOpen(buildDir+"/"+top+"_bbgraph_buf.dot")
+elif sch == "dss":
+	ftemp = helper.fileOpen(buildDir+"/ds_"+top+"/"+top+"_bbgraph.dot")
 else:
 	ftemp = helper.fileOpen(buildDir+"/"+top+"_bbgraph.dot")
+
 bufBB = []
 for line in ftemp:
 	bufBB.append(line)
@@ -29,7 +34,7 @@ ftemp.close()
 
 check = True
 for line in buf:
-	if "bbID= 1" in line:
+	if "bbID= 1," in line:
 		check = False
 
 if check:

@@ -202,31 +202,31 @@ def staticCodeGen(index):
                 elif fT.name[index]+"(" in line:    # assume "{" is in the same line as the function prototype
                     preCode.append(line)
                     line.replace("\t", " ")
-                    idx_1 = line.find("(")
-                    #if "void" not in line[0:idx_1]:
-                    #    preCode.append("#pragma HLS interface ap_hs port=return\n") # use ap_done as valid, ap_ce as nready
-                    idx_2 = line.find(",")
-                    args = []
-                    while idx_2 != -1:
-                        i = 0
-                        for k in line[idx_1+1:idx_2].split(" "):
-                            if k != "":
-                                i = i + 1
-                            if i == 2:
-                                args.append(k)
-                        assert(i == 2)
-                        idx_1 = idx_2
-                        idx_2 = line.find(",")
-                    if line[idx_1+1:line.find(")")] != "void":
-                        i = 0   
-                        for k in line[idx_1+1:line.find(")")].split(" "):
-                            if k != "":
-                                i = i + 1
-                            if i == 2:
-                                args.append(k)
-
-                    for arg in args:
-                        preCode.append("#pragma HLS interface ap_hs port="+arg+"\n")
+#                    idx_1 = line.find("(")
+#                    #if "void" not in line[0:idx_1]:
+#                    #    preCode.append("#pragma HLS interface ap_hs port=return\n") # use ap_done as valid, ap_ce as nready
+#                    idx_2 = line.find(",")
+#                    args = []
+#                    while idx_2 != -1:
+#                        i = 0
+#                        for k in line[idx_1+1:idx_2].split(" "):
+#                            if k != "":
+#                                i = i + 1
+#                            if i == 2:
+#                                args.append(k)
+#                        assert(i == 2)
+#                        idx_1 = idx_2
+#                        idx_2 = line.find(",")
+#                    if line[idx_1+1:line.find(")")] != "void": 
+#                        i = 0   
+#                        for k in line[idx_1+1:line.find(")")].split(" "):
+#                            if k != "":
+#                                i = i + 1
+#                            if i == 2:
+#                                args.append(k)
+#
+#                    for arg in args:
+#                        preCode.append("#pragma HLS interface ap_hs port="+arg+"\n")
                 else:
                     preCode.append(line)
             ftemp.close()
