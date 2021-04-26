@@ -1,0 +1,23 @@
+#!/bin/bash
+
+. env.tcl
+NAME=$1
+if [[ -f "${NAME}_opt.ll" ]]; then
+    IN=${NAME}_opt.ll
+else
+    IN=${NAME}.ll
+fi
+
+mkdir -p vhdl
+cp ${NAME}_graph_buf.dot vhdl/$NAME.dot
+(cd vhdl; $DASS/dhls/dot2vhdl/bin/dot2vhdl $NAME)
+rm vhdl/$NAME.dot vhdl/${NAME}_modelsim.tcl vhdl/${NAME}_vivado_synt.tcl
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libCollectVHDLPass.so \
+-collect-ss-rtl $IN -S > /dev/null
+
+cp $DASS/dhls/components/* vhdl/

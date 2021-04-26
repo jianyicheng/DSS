@@ -1,41 +1,57 @@
 # DASS HLS Compiler
 
-DASS is a high-level synthesis (HLS) platform tool for generating high-performance and area-efficient hardware. A central task in HLS is scheduling: the allocation of operations to clock cycles. The classic approach to scheduling is static, in which each operation is mapped to a clock cycle at compile-time, but recent years have seen the emergence of dynamic scheduling, in which an operation’s clock cycle is only determined at run-time. Both approaches have their merits: static scheduling can lead to simpler circuitry and more resource sharing, while dy- namic scheduling can lead to faster hardware when the computation has non-trivial control flow.
+DASS is a high-level synthesis (HLS) platform for generating high-performance and area-efficient hardware from C programs. DASS seeks a scheduling approach that combines the best of both worlds: static scheduling and dynamic scheduling. The users can identify the parts of the input program where dynamic scheduling does not bring any performance advantage and to use static scheduling on those parts. These statically-scheduled parts are then treated as black boxes when creating a dataflow circuit for the remainder of the program which can benefit from the flexibility of dynamic scheduling.
 
-DASS seeks a scheduling approach that combines the best of both worlds. The users can identify the parts of the input program where dynamic scheduling does not bring any performance advantage and to use static scheduling on those parts. These statically-scheduled parts are then treated as black boxes when creating a dataflow circuit for the remainder of the program which can benefit from the flexibility of dynamic scheduling.
+## Requirements
 
-An empirical evaluation on a range of applications suggests that by using this approach, we can obtain 74% of the area savings that would be made by switching from dynamic to static scheduling, and 135% of the performance benefits that would be made by switching from static to dynamic scheduling.
+[Vitis HLS](https://www.xilinx.com/html_docs/xilinx2020_2/vitis_doc/introductionvitishls.html)
 
-## Building 
+## Build with Docker
 
-### Requirements
+You need request to be added into the [Docker](https://docker-curriculum.com) group to use docker.
 
-[Vivado HLS](https://www.xilinx.com/products/design-tools/vivado/integration/esl-design.html)
+```shell
+# Get source
+git clone --recursive git@github.com:JianyiCheng/dass.git
+cd dass
 
-[Dynamatic HLS tool](https://dynamatic.epfl.ch)
+# If you are not using cas server, check if your Vitis HLS can be found:
+ls $YOUR_VHLS_DIR
+# You should see the following...
+#     DocNav  Vitis  Vivado  xic
 
-### Linking Vivado HLS
-
-In the `env.tcl` file, you need to specify where your Vivado HLS is, like:
-```
-VHLS=/tools/Xilinx/Vivado/2019.2/bin/vivado_hls
-```
-
-### Building Dynamatic
-
-The tool automatically installs Dynamatic by default. If you already have Dynamatic installed, you can simply comment the first two lines in `install.sh` and also change the directory in `env.tcl`, like:
-```
-DHLS=tools/dynamatic
+# Build docker image by specify your directory of Vitis HLS. 
+# Use `make build-docker` if you are on cas server.
+# This may take LONG time!
+make build-docker vhls=$YOUR_VHLS_DIR
 ```
 
-### Build DASS:
-
-To install DASS, you can simply run:
-```
-bash install.sh
+DASS is now installed. Everytime when you want to use it, get in the docker by the following command(`make shell` for cas server users):
+```shell
+make shell vhls=$YOUR_VHLS_DIR
 ```
 
-## How to use
+## Manual Build
+
+DASS currently is only verified to work under Ubuntu.
+
+```shell
+# Get source
+git clone --recursive git@github.com:JianyiCheng/dass.git
+cd dass
+
+./setup
+
+# Specify your directory of Vitis HLS and make sure Vitis HLS can be found:
+ls $YOUR_VHLS_DIR
+# You should see the following...
+#     DocNav  Vitis  Vivado  xic
+
+# Now install dass. This may take LONG time!
+make build vhls=$YOUR_VHLS_DIR dass=$PWD
+```
+
+## Example - Quick Start
 
 To use DASS, you can add pragma in your functions to specify which scheduling technique is applied, like:
 ```C

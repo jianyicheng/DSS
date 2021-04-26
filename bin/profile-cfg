@@ -1,0 +1,16 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+cc -c $DASS/dhls/elastic-circuits/FrequencyCounterPass/log_FrequencyCounter.c
+$CLANG -fPIC -Xclang -load -Xclang \
+$DASS/dhls/elastic-circuits/build/FrequencyCounterPass/libFrequencyCounterPass.so \
+-c ${NAME}.ll
+cc -fPIC ${NAME}.o log_FrequencyCounter.o
+./a.out || (echo "C Simulation failed. The C test bench returns a non-zero value."; exit 1)
+$CLANG -Xclang -load -Xclang \
+$DASS/dhls/elastic-circuits/build/FrequencyDataGatherPass/libFrequencyDataGatherPass.so \
+${NAME}.ll -S
+rm -f a.out log_FrequencyCounter.o $NAME.o mapping.txt $NAME.s
+

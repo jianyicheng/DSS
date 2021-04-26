@@ -1,0 +1,7 @@
+[submodule "dhls"]
+	path = dhls
+	url = git@github.com:lana555/dynamatic.git
+[submodule "llvm-project"]
+	path = llvm-project
+	url = https://github.com/llvm/llvm-project.git
+	branch = release/7.x

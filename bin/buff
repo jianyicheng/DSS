@@ -1,0 +1,6 @@
+#!/bin/bash
+
+. env.tcl
+period=$2
+period=${period:-10}
+$DASS/dhls/Buffers/bin/buffers buffers -filename=$1 -period=$period

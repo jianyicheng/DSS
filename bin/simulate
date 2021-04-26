@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+mkdir -p sim
+(cd sim; mkdir -p C_OUT  C_SRC  HLS_VERIFY  INPUT_VECTORS  VHDL_OUT  VHDL_SRC)
+cp vhdl/* sim/VHDL_SRC/
+cp $NAME.c* sim/C_SRC
+cp $NAME.h* sim/C_SRC
+(cd sim/HLS_VERIFY; $DASS/dhls/Regression_test/hls_verifier/HlsVerifier/build/hlsverifier cover -aw32 ../C_SRC/$NAME.c* ../C_SRC/$NAME.c* $NAME)

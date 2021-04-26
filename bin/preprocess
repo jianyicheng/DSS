@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+$CLANG -Xclang -disable-O0-optnone -emit-llvm -S -c $NAME.c* -o ${NAME}_.ll
+$OPT -mem2reg -loop-rotate -constprop -simplifycfg -die -instcombine \
+-lowerswitch -early-cse-memssa ${NAME}_.ll -S -o ${NAME}.ll
+rm -f ${NAME}_.ll

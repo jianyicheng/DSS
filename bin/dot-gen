@@ -1,0 +1,24 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+if [[ -f "${NAME}_opt.ll" ]]; then
+    IN=${NAME}_opt.ll
+else
+    IN=${NAME}.ll
+fi
+
+useLSQ=$2
+useLSQ=${useLSQ:-"true"}
+if [ "$useLSQ" != "true" ] && [ "$useLSQ" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-polly-process-unprofitable -mycfgpass -use-lsq=$useLSQ \
+$IN -S  > /dev/null
+rm -f *_freq.txt stats out.txt debug_func

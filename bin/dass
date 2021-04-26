@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. env.tcl
+
+preprocess $1
+profile-cfg $1
+synthesize-islands $1
+vitis_hls ss.tcl
+dot-gen $1
+buff $1
+rtl-gen $1
