@@ -2,6 +2,6 @@
 	path = dhls
 	url = git@github.com:lana555/dynamatic.git
 [submodule "llvm-project"]
-	path = llvm-project
+	path = llvm
 	url = https://github.com/llvm/llvm-project.git
 	branch = release/7.x
