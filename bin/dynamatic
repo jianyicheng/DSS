@@ -4,6 +4,7 @@
 
 preprocess $1
 profile-cfg $1
-dot-gen $1
+dot-gen $1 $2
 buff $1 3
-rtl-gen $1
+cp $1_graph_buf.dot $1_graph_buf_new.dot
+rtl-gen $1 false true

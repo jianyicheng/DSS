@@ -2,22 +2,75 @@
 
 . env.tcl
 NAME=$1
-if [[ -f "${NAME}_opt.ll" ]]; then
-    IN=${NAME}_opt.ll
+if [[ -f "${NAME}_ds.ll" ]]; then
+    IN=${NAME}_ds.ll
 else
     IN=${NAME}.ll
 fi
 
-mkdir -p vhdl
-cp ${NAME}_graph_buf.dot vhdl/$NAME.dot
-(cd vhdl; $DASS/dhls/dot2vhdl/bin/dot2vhdl $NAME)
-rm vhdl/$NAME.dot vhdl/${NAME}_modelsim.tcl vhdl/${NAME}_vivado_synt.tcl
+if [[ -f "${NAME}_graph_buf_new.dot" ]]; then
+    DOTIN=${NAME}_graph_buf_new.dot
+else
+    DOTIN=${NAME}_graph_buf.dot
+fi
+
+OFFSET=$2
+OFFSET=${OFFSET:-"true"}
+if [ "$OFFSET" != "true" ] && [ "$OFFSET" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+OPTIMIZELOOP=$3
+OPTIMIZELOOP=${OPTIMIZELOOP:-"false"}
+if [ "$OPTIMIZELOOP" != "true" ] && [ "$OPTIMIZELOOP" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+mkdir -p rtl
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-ss-wrapper-gen $IN -S -ir_dir=./vhls -has_ip=true -dass_dir=$DASS -has_offset=$OFFSET -optimize-loop=$OPTIMIZELOOP > /dev/null
+
+rm -f *_freq.txt stats out.txt debug_func
+
+cp $DOTIN rtl/$NAME.dot
+(cd rtl; $DASS/dass/tools/dot2vhdl/bin/dot2vhdl $NAME 2>&1 | tee ../dot2vhdl.log)
+rm -f rtl/$NAME.dot rtl/${NAME}_modelsim.tcl rtl/${NAME}_vivado_synt.tcl
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-dass-vhdl-rewrite $IN -S -top=$NAME -optimize-loop=$OPTIMIZELOOP > /dev/null
+mv rtl/$NAME.vhd rtl/${NAME}_debug
 
 $OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
 -load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
 -load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
 -load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
--load $DASS/dass/build/Synthesis/libCollectVHDLPass.so \
--collect-ss-rtl $IN -S > /dev/null
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-collect-ss-rtl $IN -S -rtl=verilog -dass_dir=$DASS -has_ip=true -optimize-loop=$OPTIMIZELOOP > /dev/null
 
-cp $DASS/dhls/components/* vhdl/
+# Use library in VHDL 2008
+# cp $DASS/dhls/components/* rtl/
+# Use library in VHDL 2003
+cp $DASS/dass/components/*.v* rtl/
+cp $DASS/dass/components/ip/*.v* rtl/
+
+if ls ./rtl/*.v 1> /dev/null 2>&1; then
+    for file in ./rtl/*.v; do
+        if ! grep -Fxq '`timescale 1ns/1ps' $file; then
+            sed -i '1i `timescale 1ns/1ps' $file;
+        fi
+    done
+fi
+
+if [ -d "./rtl/ieee_FP_pkg" ]
+then
+    # cp ./rtl/ieee_FP_pkg/* ./rtl
+    rm -r ./rtl/ieee_FP_pkg
+fi
+

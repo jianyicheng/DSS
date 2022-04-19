@@ -1,0 +1,62 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+if [[ -f "${NAME}_ds.ll" ]]; then
+    IN=${NAME}_ds.ll
+else
+    IN=${NAME}.ll
+fi
+
+useLSQ=$2
+useLSQ=${useLSQ:-"true"}
+if [ "$useLSQ" != "true" ] && [ "$useLSQ" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+OFFSET=$3
+OFFSET=${OFFSET:-"true"}
+if [ "$OFFSET" != "true" ] && [ "$OFFSET" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+OPTIMIZECF=$4
+OPTIMIZECF=${OPTIMIZECF:-"true"}
+if [ "$OPTIMIZECF" != "true" ] && [ "$OPTIMIZECF" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+profile-cfg $NAME backend
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-polly-process-unprofitable -load-offset-cfg -use-lsq=$useLSQ \
+ -has_offset=$OFFSET -c-slow-ppl=$OPTIMIZECF $IN -S > /dev/null
+dot -Tpng $NAME.dot > $NAME.png
+
+buff $1
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-polly-process-unprofitable -remove-call-dummy -use-lsq=$useLSQ -dass_dir=$DASS \
+-c-slow-ppl=$OPTIMIZECF $IN -S > /dev/null
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/Synthesis/libSynthesis.so \
+-polly-process-unprofitable -buff-if-stmt \
+-c-slow-ppl=$OPTIMIZECF $IN -S  > /dev/null
+
+python3 $DASS/dass/scripts/DynamaticOptimizer.py -l ${NAME}_graph_buf_new.dot
+mv ${NAME}_graph_buf_new.dot ${NAME}_graph_buf_new.dot_
+mv ${NAME}_graph_buf_new_new.dot ${NAME}_graph_buf_new.dot
+dot -Tpng ${NAME}_graph_buf_new.dot > ${NAME}_new.png

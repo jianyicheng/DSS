@@ -1,0 +1,33 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+
+profile-cfg $NAME frontend
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/StaticIslands/libStaticIslands.so \
+-polly-process-unprofitable -get-static-loops-mem \
+${NAME}.ll -S -o ${NAME}_opt0.ll
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/StaticIslands/libStaticIslands.so \
+-polly-process-unprofitable -get-static-loops-cf \
+${NAME}_opt0.ll -S -o ${NAME}_opt1.ll -top=$1
+
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/StaticIslands/libStaticIslands.so \
+-polly-process-unprofitable -get-static-instrs \
+${NAME}_opt1.ll -S -o ${NAME}_opt.ll
+
+rm ${NAME}_opt0.ll ${NAME}_opt1.ll

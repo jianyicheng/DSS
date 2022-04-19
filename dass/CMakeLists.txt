@@ -18,6 +18,16 @@ include_directories(${DHLS_ROOT}/include)
 include_directories(${DHLS_ROOT}/include/OptimizeBitwidth)
 include_directories(${DHLS_ROOT}/include/ElasticPass)
 
+include_directories(${LLVM_ROOT}/../polly/include)
+include_directories(${LLVM_ROOT}/../polly/lib/External/isl/include)
+include_directories(${LLVM_ROOT}/tools/polly/lib/External/isl/include/)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
+add_subdirectory(BoogieVerification)
+add_subdirectory(Frontend)
+add_subdirectory(StaticIslands)
 add_subdirectory(Synthesis)
+add_subdirectory(VitisHLS)
+
+

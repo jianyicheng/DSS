@@ -3,7 +3,25 @@
 . env.tcl
 
 NAME=$1
-$CLANG -Xclang -disable-O0-optnone -emit-llvm -S -c $NAME.c* -o ${NAME}_.ll
-$OPT -mem2reg -loop-rotate -constprop -simplifycfg -die -instcombine \
--lowerswitch -early-cse-memssa ${NAME}_.ll -S -o ${NAME}.ll
-rm -f ${NAME}_.ll
+
+python3 $DASS/dass/scripts/PragmaParser.py $(ls *.c*)
+
+#$CLANG -Xclang -disable-O0-optnone -emit-llvm -S -g -c $NAME.c* -o ${NAME}_0.ll
+$CLANG -Xclang -emit-llvm -S -g -c $NAME.c* -o ${NAME}_0.ll
+
+$OPT -load $DASS/dass/build/Frontend/libFrontend.so -name-loops -strip-debug -S ${NAME}_0.ll -o ${NAME}_1.ll
+
+$OPT -mem2reg -constprop -simplifycfg -die -instcombine \
+-lowerswitch -early-cse-memssa ${NAME}_1.ll -S -o ${NAME}_2.ll
+
+$OPT -load $DASS/dass/build/Frontend/libFrontend.so -load $DASS/dass/build/Frontend/libFrontend.so \
+-load-pragmas -fold-bitcast ${NAME}_2.ll -S -o ${NAME}_3.ll
+
+$OPT -load $DASS/dass/build/BoogieVerification/libBoogieVerification.so \
+-loop-interchange-check ${NAME}_3.ll -S -o ${NAME}.ll
+
+$OPT -loop-rotate -S ${NAME}.ll -o ${NAME}_ds.ll
+
+lli ${NAME}_ds.ll || (echo "C Simulation failed. The C test bench returns a non-zero value."; exit 1)
+
+rm -f ${NAME}_0.ll ${NAME}_1.ll ${NAME}_2.ll ${NAME}_3.ll

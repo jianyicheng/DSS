@@ -1,0 +1,7 @@
+#!/bin/bash
+
+. env.tcl
+
+java -jar -Xmx7G $DASS/dhls/chisel_lsq/jar/lsq.jar \
+    --target-dir . \
+    --spec-file $1;

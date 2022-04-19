@@ -9,27 +9,31 @@ else
     IN=${NAME}.ll
 fi
 
+OFFSET=$2
+OFFSET=${OFFSET:-"true"}
+if [ "$OFFSET" != "true" ] && [ "$OFFSET" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
 mkdir -p vhls
 
-$OPT -load $DASS/dass/build/Synthesis/libDirectSynthesisPass.so \
--pre-synthesise $IN -S -ir_dir=./vhls -dass_dir=$DASS > /dev/null
+$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
+-load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
+-load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
+-load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
+-load $DASS/dass/build/StaticIslands/libStaticIslands.so \
+-pre-synthesise $IN -S -dass_dir=$DASS > /dev/null
 
-vitis_hls ss_direct.tcl
-
-$OPT -load $DASS/dass/build/Synthesis/libGetTimeOffsetPass.so \
--get-time-offset $IN -S -ir_dir=./vhls -dass_dir=$DASS > /dev/null
+# Analyzing offset constraints
+if [ -s ./vhls/ss_direct.tcl ]; then
+    (cd vhls; parallel-vhls.py --vhls_script ./ss_direct.tcl)
+else
+    echo "No SS functions found."
+fi
 
 $OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
 -load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
 -load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
 -load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
--load $DASS/dass/build/Synthesis/libAddHandshakeInterfacePass.so \
--AddHandshakeInterface $IN -S -o ${NAME}_vhls.ll
-
-mkdir -p vhdl
-$OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
--load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
--load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
--load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
--load $DASS/dass/build/Synthesis/libSynthesisPass.so \
--synthesize $IN -S -ir_dir=./vhls -dass_dir=$DASS > /dev/null
+-load $DASS/dass/build/StaticIslands/libStaticIslands.so \
+-add-hs-interface $IN -S -dass_dir=$DASS -has_ip=true -has_offset=$OFFSET > /dev/null

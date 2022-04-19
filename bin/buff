@@ -1,6 +1,10 @@
 #!/bin/bash
 
 . env.tcl
+
 period=$2
-period=${period:-10}
-$DASS/dhls/Buffers/bin/buffers buffers -filename=$1 -period=$period
+period=${period:-4}
+$DASS/dhls/Buffers/bin/buffers buffers -filename=$1 -period=$period 2>&1 | tee buff.log
+if ! grep -Fq "Milp time for remaining channels" buff.log; then
+    exit 1
+fi

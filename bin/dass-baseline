@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. env.tcl
+
+NAME=$1
+
+useLSQ=$2
+useLSQ=${useLSQ:-"true"}
+if [ "$useLSQ" != "true" ] && [ "$useLSQ" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+OFFSET=$3
+OFFSET=${OFFSET:-"true"}
+if [ "$OFFSET" != "true" ] && [ "$OFFSET" != "false" ]; then
+    echo "Unrecognized LSQ setup. Expected true or false" && exit 1
+fi
+
+OPTIMIZECF=$4
+OPTIMIZECF=${OPTIMIZECF:-"true"}
+if [ "$OPTIMIZECF" != "true" ] && [ "$OPTIMIZECF" != "false" ]; then
+    echo "Unrecognized control flow setup. Expected true or false" && exit 1
+fi
+
+preprocess $NAME
+synthesize-islands $NAME $OFFSET
+if [ -s ./vhls/ss.tcl ]; then
+    (cd vhls; parallel-vhls.py --vhls_script ./ss.tcl)
+else
+    echo "No SS functions found."
+fi
+buffer-islands $NAME $useLSQ $OFFSET $OPTIMIZECF
+rtl-gen $NAME $OFFSET $OPTIMIZECF
+
+echo "DASS: Generate hardware successfully."

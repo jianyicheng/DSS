@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. env.tcl
+mkdir -p $DASS/dass/build
+cd $DASS/dass/build
+cmake .. \
+ -DLLVM_ROOT=../../llvm/build \
+ -DDHLS_ROOT=../dhls/elastic-circuits \
+ -DCMAKE_C_COMPILER=$(which gcc) \
+ -DCMAKE_CXX_COMPILER=$(which g++) \
+ -DCMAKE_BUILD_TYPE=DEBUG
+make -j

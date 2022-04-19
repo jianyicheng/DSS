@@ -3,8 +3,8 @@
 . env.tcl
 
 NAME=$1
-if [[ -f "${NAME}_opt.ll" ]]; then
-    IN=${NAME}_opt.ll
+if [[ -f "${NAME}_ds.ll" ]]; then
+    IN=${NAME}_ds.ll
 else
     IN=${NAME}.ll
 fi
@@ -19,6 +19,7 @@ $OPT -load $DASS/dhls/elastic-circuits/build/MemElemInfo/libLLVMMemElemInfo.so \
 -load $DASS/dhls/elastic-circuits/build/ElasticPass/libElasticPass.so \
 -load $DASS/dhls/elastic-circuits/build/OptimizeBitwidth/libLLVMOptimizeBitWidth.so \
 -load $DASS/dhls/elastic-circuits/build/MyCFGPass/libMyCFGPass.so \
--polly-process-unprofitable -mycfgpass -use-lsq=$useLSQ \
+-polly-process-unprofitable -mycfgpass -use-lsq=$useLSQ -export-dot=true -optimize-if=false \
 $IN -S  > /dev/null
-rm -f *_freq.txt stats out.txt debug_func
+
+dot -Tpng $NAME.dot > $NAME.png

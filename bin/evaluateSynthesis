@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. env.tcl
+
+JOBS=$2
+JOBS=${JOBS:-$((($(grep -c ^processor /proc/cpuinfo)+1)/2))}
+
+python3 $DASS/dass/scripts/VitisSynthesisTCLGen.py -t $1 -d $DASS -j $JOBS
+vivado -mode batch -source syn.tcl 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DASS=/workspace
-CLANG=$DASS/llvm/build/bin/clang
-OPT=$DASS/llvm/build/bin/opt
-set -e
+export DASS=/scratch/jc9016/shared/dass
+export CLANG=$DASS/llvm/build/bin/clang
+export OPT=$DASS/llvm/build/bin/opt
+set -e -o xtrace

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. env.tcl
+
+depth=$2
+depth=${depth:-1000}
+python3 $DASS/dass/scripts/InsertBuffersNaive.py $1_graph_buf_new.dot -d $depth
+mv $1_graph_buf_new.dot $1_backup_graph_buf_new.dot
+mv $1_graph_buf_new_new.dot $1_graph_buf_new.dot
