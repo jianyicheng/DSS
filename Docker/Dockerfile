@@ -26,10 +26,8 @@ RUN dnf install -y llvm graphviz lld clang python3 gcc-gfortran \
                    scala parallel \
     && dnf --enablerepo=powertools install -y \
                    doxygen graphviz-devel glibc-static libstdc++-static
-    && dnf install -y llvm clang gmp-devel pcre-devel \
-                   openssl openssl-devel llvm-devel
-    && dnf --enablerepo=powertools install texinfo -y
-ld the following packages from source:
+
+# Build the following packages from source:
 RUN mkdir -p /dkrPkgs
 # cmake 3.20
 RUN cd /dkrPkgs \
