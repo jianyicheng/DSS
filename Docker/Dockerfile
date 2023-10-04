@@ -15,7 +15,7 @@ RUN apt-get update -y \
     && apt-get install -y gcc-riscv64-unknown-elf \
                           libgmp-dev python3 python3-pip g++\
                           clang llvm lld clang-tidy clang-format \
-                          gcc-multilib gcc cmake sudo wget vim \
+                          gcc-multilib gcc sudo wget vim \
                           curl tmux git bc locales libncurses5 \
                           help2man
 
@@ -25,11 +25,11 @@ RUN apt-get update -y \
                           samba flex texinfo time libglib2.0-dev \
                           libpixman-1-dev libarchive-dev libarchive-tools \
                           libbz2-dev libattr1-dev libcap-ng-dev \
-                          libexpat1-dev libgmp-dev libelf-dev cmake \
+                          libexpat1-dev libgmp-dev libelf-dev \
                           coinor-cbc coinor-libcbc-dev
 RUN apt-get update -y \
     && apt-get install -y libncurses5 gcc g++ clang llvm \
-                          graphviz make cmake libgraphviz-dev pkg-config \
+                          graphviz make libgraphviz-dev pkg-config \
                           parallel default-jre default-jdk scala g++-multilib \
                           z3 build-essential libboost-all-dev libssl-dev \
                           scala 
@@ -73,12 +73,12 @@ RUN dotnet tool install --global boogie --version 2.10.2
 ENV vhls $VHLS_PATH
 RUN printf "\
 \nexport LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:\$LIBRARY_PATH \
-\n# Basic PATH setup \
-\nexport PATH=/workspace/bin:/workspace/llvm/build/bin:$PATH \
 \n# Vitis HLS setup \
 \nexport VHLS=${VHLS_PATH} \
 \nsource ${VHLS_PATH}/Vitis_HLS/2020.2/settings64.sh \
-\nsource /workspace/dass/scripts/setup-vitis-hls-llvm.sh \
+\n# source /workspace/dass/scripts/setup-vitis-hls-llvm.sh \
+\n# Basic PATH setup \
+\nexport PATH=/dkrPkgs/cmake-3.20.3/bin:/workspace/bin:/workspace/llvm/build/bin:$PATH \
 \n# Thread setup \
 \nexport nproc=\$(grep -c ^processor /proc/cpuinfo) \
 \n# Terminal color... \
